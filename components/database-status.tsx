@@ -88,7 +88,7 @@ export function DatabaseStatus() {
         {errorMessage && <p className="mt-2 text-xs text-destructive">{errorMessage}</p>}
 
         <div className="mt-2 text-xs text-muted-foreground">
-          <p>Host: {process.env.NEXT_PUBLIC_DB_HOST}</p>
+          <p>Host: {process.env.MYSQL_HOST}</p>
           {/* <p>Host: {process.env.NEXT_PUBLIC_DB_HOST || "209.97.155.164"}</p> */}
           <p>Database: {process.env.NEXT_PUBLIC_DB_NAME || "pine"}</p>
         </div>

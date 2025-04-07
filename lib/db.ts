@@ -2,21 +2,18 @@ import mysql from "mysql2/promise"
 
 // Create a connection pool
 const pool = mysql.createPool({
-  host: "localhost",
-  // host: process.env.MYSQL_HOST,
-  user: "root",
-  // user: process.env.MYSQL_USER,
-  password: "qweqeqeqwe1234",
-  // password: process.env.MYSQL_PASSWORD,
-  database: "pine",
-  // database: process.env.MYSQL_DATABASE,
-  port: Number.parseInt("3306"),
-  // port: Number.parseInt(process.env.MYSQL_PORT || "3306"),
+  host: process.env.MYSQL_HOST,
+  user: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE,
+  port: Number.parseInt(process.env.MYSQL_PORT || "3306"),
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  ssl: process.env.NODE_ENV === "production" ? {} : undefined, // Enable SSL in production
-})
+  connectTimeout: 3000, // 3 second timeout
+  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
+  debug: process.env.NODE_ENV === "development" // Enable debug logs in dev
+});
 
 export const db = {
   query: async (sql: string, params?: any[]) => {
