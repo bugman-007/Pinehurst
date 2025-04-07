@@ -10,7 +10,7 @@ const pool = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  connectTimeout: 3000, // 3 second timeout
+  connectTimeout: 3000, //  second timeout
   ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
   debug: process.env.NODE_ENV === "development" // Enable debug logs in dev
 });
