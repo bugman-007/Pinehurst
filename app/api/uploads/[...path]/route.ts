@@ -13,12 +13,15 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
     }
 
     // Get the file path from the params
-    const filePath = join(process.cwd(), "uploads", ...params.path)
+    // Use the same upload directory as defined in the upload route
+    const uploadDir = process.env.UPLOAD_DIR || "/var/www/uploads"
+    const filePath = join(uploadDir, ...params.path)
 
     // Check if the file exists
     try {
       await stat(filePath)
     } catch (error) {
+      console.error("File not found:", filePath, error)
       return NextResponse.json({ message: "File not found" }, { status: 404 })
     }
 
@@ -49,4 +52,3 @@ export async function GET(request: NextRequest, { params }: { params: { path: st
     )
   }
 }
-
