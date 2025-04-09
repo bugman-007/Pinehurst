@@ -177,7 +177,7 @@ export function DocumentUploadForm() {
                   {getFileIcon()}
                   <div className="flex-1 min-w-0">
                     <p className="font-medium truncate">{file.name}</p>
-                    <p className="text-sm text-muted-foreground">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    <p className="text-sm text-muted-foreground">{(file.size / 1024 / 1024)} MB</p>
                   </div>
                 </div>
 

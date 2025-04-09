@@ -65,7 +65,7 @@ export function PaymentHistoryTable({ payments }: PaymentHistoryTableProps) {
           payments.map((payment) => (
             <TableRow key={payment.id}>
               <TableCell className="font-medium">#{payment.id.substring(0, 8)}</TableCell>
-              <TableCell>${payment.amount.toFixed(2)}</TableCell>
+              <TableCell>${payment.amount}</TableCell>
               <TableCell>
                 <DateFormatter date={payment.date} />
               </TableCell>

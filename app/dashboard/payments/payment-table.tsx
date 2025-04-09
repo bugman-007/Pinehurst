@@ -96,7 +96,7 @@ export function PaymentTable({ payments }: PaymentTableProps) {
           payments.map((payment) => (
             <TableRow key={payment.id}>
               <TableCell>{payment.customer_name}</TableCell>
-              <TableCell>${payment.amount.toFixed(2)}</TableCell>
+              <TableCell>${payment.amount}</TableCell>
               <TableCell>
                 <DateFormatter date={payment.date} />
               </TableCell>
