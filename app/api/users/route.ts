@@ -3,6 +3,34 @@ import { hash } from "bcryptjs"
 import { db } from "@/lib/db"
 import { getCurrentUser } from "@/lib/auth"
 
+export async function GET(req: Request) {
+  try {
+    const user = await getCurrentUser()
+
+    if (!user || user.role !== "admin") {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+    }
+
+    const url = new URL(req.url)
+    const role = url.searchParams.get("role")
+
+    let query = "SELECT id, name FROM users"
+    const params = []
+
+    if (role) {
+      query += " WHERE role = ?"
+      params.push(role)
+    }
+
+    const users = await db.query(query, params)
+
+    return NextResponse.json({ users }, { status: 200 })
+  } catch (error) {
+    console.error("Users fetch error:", error)
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 })
+  }
+}
+
 export async function POST(req: Request) {
   try {
     const user = await getCurrentUser()
@@ -33,6 +61,8 @@ export async function POST(req: Request) {
       name,
       email,
       hashedPassword,
+
+      hashedPassword,
       role || "customer",
     ])
 
@@ -42,4 +72,3 @@ export async function POST(req: Request) {
     return NextResponse.json({ message: "Internal server error" }, { status: 500 })
   }
 }
-
