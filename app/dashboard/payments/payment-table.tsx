@@ -56,15 +56,12 @@ export function PaymentTable({ payments: initialPayments }: PaymentTableProps) {
     // Recalculate balance when amount_due or amount_paid changes
     if (field === "amount_due" || field === "amount_paid") {
       const amountDue = field === "amount_due" ? Number(value) : editedPayment.amount_due
-
       const amountPaid = field === "amount_paid" ? Number(value) : editedPayment.amount_paid
-
       const balance = Math.max(0, amountDue - amountPaid)
 
       updatedPayment = {
         ...updatedPayment,
         balance,
-        status: balance <= 0 ? "paid" : "pending",
       }
     }
 
@@ -144,6 +141,12 @@ export function PaymentTable({ payments: initialPayments }: PaymentTableProps) {
     switch (status.toLowerCase()) {
       case "paid":
         return <Badge className="bg-green-500">Paid</Badge>
+      case "partially_paid":
+        return <Badge className="bg-blue-500">Partially Paid</Badge>
+      case "not_paid":
+        return <Badge className="bg-yellow-500">Not Paid</Badge>
+      case "past_due":
+        return <Badge className="bg-red-500">Past Due</Badge>
       case "pending":
         return <Badge className="bg-yellow-500">Pending</Badge>
       case "failed":
@@ -160,10 +163,10 @@ export function PaymentTable({ payments: initialPayments }: PaymentTableProps) {
           <TableRow>
             <TableHead>Customer</TableHead>
             <TableHead>Parcel ID</TableHead>
-            <TableHead>Amount Due</TableHead>
+            <TableHead>Starting Balance</TableHead>
             <TableHead>Amount Paid</TableHead>
-            <TableHead>Balance</TableHead>
-            <TableHead>Date</TableHead>
+            <TableHead>Ending Balance</TableHead>
+            <TableHead>Due Date</TableHead>
             <TableHead>Paid Date</TableHead>
             <TableHead>Method</TableHead>
             <TableHead>Status</TableHead>
@@ -209,7 +212,7 @@ export function PaymentTable({ payments: initialPayments }: PaymentTableProps) {
                         step="0.01"
                       />
                     </TableCell>
-                    <TableCell>${editedPayment.balance}</TableCell>
+                    <TableCell>${editedPayment.balance.toFixed(2)}</TableCell>
                     <TableCell>
                       <Input
                         type="date"
@@ -245,10 +248,29 @@ export function PaymentTable({ payments: initialPayments }: PaymentTableProps) {
                           <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
                           <SelectItem value="paypal">PayPal</SelectItem>
                           <SelectItem value="cash">Cash</SelectItem>
+                          <SelectItem value="zelle">Zelle</SelectItem>
+                          <SelectItem value="venmo">Venmo</SelectItem>
+                          <SelectItem value="cash_app">Cash App</SelectItem>
+                          <SelectItem value="money_order">Money Order</SelectItem>
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    <TableCell>{getStatusBadge(editedPayment.status)}</TableCell>
+                    <TableCell>
+                      <Select
+                        value={editedPayment.status}
+                        onValueChange={(value) => handleInputChange("status", value)}
+                      >
+                        <SelectTrigger className="w-[130px]">
+                          <SelectValue placeholder="Select status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="paid">Paid</SelectItem>
+                          <SelectItem value="partially_paid">Partially Paid</SelectItem>
+                          <SelectItem value="not_paid">Not Paid</SelectItem>
+                          <SelectItem value="past_due">Past Due</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
                         <Button variant="outline" size="icon" onClick={handleSaveEdit}>
@@ -267,9 +289,9 @@ export function PaymentTable({ payments: initialPayments }: PaymentTableProps) {
                   <>
                     <TableCell>{payment.customer_name}</TableCell>
                     <TableCell>{payment.parcel_id || "-"}</TableCell>
-                    <TableCell>${payment.amount_due || "0.00"}</TableCell>
-                    <TableCell>${payment.amount_paid || "0.00"}</TableCell>
-                    <TableCell>${payment.balance || "0.00"}</TableCell>
+                    <TableCell>${payment.amount_due?.toFixed(2) || "0.00"}</TableCell>
+                    <TableCell>${payment.amount_paid?.toFixed(2) || "0.00"}</TableCell>
+                    <TableCell>${payment.balance?.toFixed(2) || "0.00"}</TableCell>
                     <TableCell>
                       <DateFormatter date={payment.date} />
                     </TableCell>

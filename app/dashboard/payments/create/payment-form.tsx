@@ -63,21 +63,9 @@ export function PaymentForm() {
       const paid = Number.parseFloat(amountPaid)
       const calculatedBalance = Math.max(0, due - paid)
 
-      setBalance(`${calculatedBalance}`)
-
-      // Update status based on balance
-      if (calculatedBalance <= 0) {
-        setStatus("paid")
-        // Set paid date to today if not already set
-        if (!paidDate) {
-          setPaidDate(new Date().toISOString().split("T")[0])
-        }
-      } else {
-        setStatus("pending")
-        setPaidDate("")
-      }
+      setBalance(calculatedBalance.toFixed(2))
     }
-  }, [amountDue, amountPaid, paidDate])
+  }, [amountDue, amountPaid])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -179,7 +167,7 @@ export function PaymentForm() {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="amount_due">Amount Due</Label>
+              <Label htmlFor="amount_due">Starting Balance</Label>
               <Input
                 id="amount_due"
                 type="number"
@@ -209,24 +197,29 @@ export function PaymentForm() {
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="balance">Balance</Label>
+              <Label htmlFor="balance">Ending Balance</Label>
               <Input id="balance" value={balance} readOnly className="bg-muted" />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="status">Status</Label>
-              <Input
-                id="status"
-                value={status === "paid" ? "Paid" : "Pending"}
-                readOnly
-                className="bg-muted capitalize"
-              />
+              <Select value={status} onValueChange={setStatus}>
+                <SelectTrigger id="status">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="paid">Paid</SelectItem>
+                  <SelectItem value="partially_paid">Partially Paid</SelectItem>
+                  <SelectItem value="not_paid">Not Paid</SelectItem>
+                  <SelectItem value="past_due">Past Due</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
+              <Label htmlFor="date">Due Date</Label>
               <Input id="date" type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
             </div>
 
@@ -253,6 +246,10 @@ export function PaymentForm() {
                 <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
                 <SelectItem value="paypal">PayPal</SelectItem>
                 <SelectItem value="cash">Cash</SelectItem>
+                <SelectItem value="zelle">Zelle</SelectItem>
+                <SelectItem value="venmo">Venmo</SelectItem>
+                <SelectItem value="cash_app">Cash App</SelectItem>
+                <SelectItem value="money_order">Money Order</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -26,7 +26,7 @@ async function initializeDatabase() {
         amount DECIMAL(10, 2) NOT NULL,
         date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         method VARCHAR(50) NOT NULL,
-        status ENUM('paid', 'pending', 'failed') NOT NULL DEFAULT 'pending',
+        status ENUM('partially paid', 'paid', 'not paid', 'past due') NOT NULL DEFAULT 'not paid',
         FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `)
@@ -101,7 +101,7 @@ async function initializeDatabase() {
           199.99,
           new Date("2023-03-10"),
           "credit_card",
-          "pending",
+          "not_paid",
         ])
 
         await db.query("INSERT INTO payments (customer_id, amount, date, method, status) VALUES (?, ?, ?, ?, ?)", [

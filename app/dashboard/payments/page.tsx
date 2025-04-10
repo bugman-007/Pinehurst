@@ -15,22 +15,22 @@ export default async function PaymentsPage() {
 
   // Fetch payments from the database with user information
   const payments = await db.query(`
-    SELECT 
-      p.id, 
-      p.customer_id, 
-      p.parcel_id, 
-      p.amount_due, 
-      p.amount_paid, 
-      p.balance, 
-      p.date, 
-      p.paid_date, 
-      p.method, 
-      p.status, 
-      u.name as customer_name
-    FROM payments p
-    JOIN users u ON p.customer_id = u.id
-    ORDER BY p.date DESC
-  `)
+  SELECT 
+    p.id, 
+    p.customer_id, 
+    p.parcel_id, 
+    p.amount_due as amount_due, 
+    p.amount_paid, 
+    p.balance, 
+    p.date, 
+    p.paid_date, 
+    p.method, 
+    p.status, 
+    u.name as customer_name
+  FROM payments p
+  JOIN users u ON p.customer_id = u.id
+  ORDER BY p.date DESC
+`)
 
   return (
     <DashboardLayout

@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS payments (
   amount DECIMAL(10, 2) NOT NULL,
   date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   method VARCHAR(50) NOT NULL,
-  status ENUM('paid', 'pending', 'failed') NOT NULL DEFAULT 'pending',
+  status ENUM('partially paid', 'paid' 'not paid', 'past due') NOT NULL DEFAULT 'not paid',
   FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -47,7 +47,7 @@ INSERT INTO payments (customer_id, amount, date, method, status)
 VALUES 
   (2, 99.99, '2023-01-15 10:30:00', 'credit_card', 'paid'),
   (2, 149.99, '2023-02-20 14:45:00', 'paypal', 'paid'),
-  (3, 199.99, '2023-03-10 09:15:00', 'credit_card', 'pending'),
+  (3, 199.99, '2023-03-10 09:15:00', 'credit_card', 'paid'),
   (3, 49.99, '2023-04-05 16:20:00', 'bank_transfer', 'paid');
 
 -- Add some sample documents

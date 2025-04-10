@@ -19,12 +19,14 @@ interface PaymentHistoryTableProps {
 export function PaymentHistoryTable({ payments }: PaymentHistoryTableProps) {
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
+      case "partially paid":
+        return <Badge className="bg-blue-500">Partially Paid</Badge>
       case "paid":
         return <Badge className="bg-green-500">Paid</Badge>
-      case "pending":
-        return <Badge className="bg-yellow-500">Pending</Badge>
-      case "failed":
-        return <Badge variant="destructive">Failed</Badge>
+      case "not paid":
+        return <Badge className="bg-yellow-500">Not Paid</Badge>
+      case "past due":
+        return <Badge variant="destructive">Past Due</Badge>
       default:
         return <Badge>{status}</Badge>
     }
