@@ -63,7 +63,7 @@ export function PaymentForm() {
       const paid = Number.parseFloat(amountPaid)
       const calculatedBalance = Math.max(0, due - paid)
 
-      setBalance(calculatedBalance.toFixed(2))
+      setBalance(`${calculatedBalance}`)
 
       // Update status based on balance
       if (calculatedBalance <= 0) {

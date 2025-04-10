@@ -209,7 +209,7 @@ export function PaymentTable({ payments: initialPayments }: PaymentTableProps) {
                         step="0.01"
                       />
                     </TableCell>
-                    <TableCell>${editedPayment.balance.toFixed(2)}</TableCell>
+                    <TableCell>${editedPayment.balance}</TableCell>
                     <TableCell>
                       <Input
                         type="date"
@@ -267,9 +267,9 @@ export function PaymentTable({ payments: initialPayments }: PaymentTableProps) {
                   <>
                     <TableCell>{payment.customer_name}</TableCell>
                     <TableCell>{payment.parcel_id || "-"}</TableCell>
-                    <TableCell>${payment.amount_due?.toFixed(2) || "0.00"}</TableCell>
-                    <TableCell>${payment.amount_paid?.toFixed(2) || "0.00"}</TableCell>
-                    <TableCell>${payment.balance?.toFixed(2) || "0.00"}</TableCell>
+                    <TableCell>${payment.amount_due || "0.00"}</TableCell>
+                    <TableCell>${payment.amount_paid || "0.00"}</TableCell>
+                    <TableCell>${payment.balance || "0.00"}</TableCell>
                     <TableCell>
                       <DateFormatter date={payment.date} />
                     </TableCell>
