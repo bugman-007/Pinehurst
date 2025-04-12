@@ -132,7 +132,7 @@ importers:
         specifier: 15.2.4
         version: 15.2.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       next-auth:
-        specifier: latest
+        specifier: ^4.24.7
         version: 4.24.11(@auth/core@0.38.0(nodemailer@6.10.0))(next@15.2.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(nodemailer@6.10.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       next-themes:
         specifier: ^0.4.4
