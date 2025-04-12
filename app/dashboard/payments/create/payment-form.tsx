@@ -16,19 +16,31 @@ interface Customer {
   name: string
 }
 
+interface Property {
+  id: string
+  parcel_id: string
+  street_number: string
+  street_name: string
+  city: string
+  state: string
+}
+
 export function PaymentForm() {
   const [customers, setCustomers] = useState<Customer[]>([])
+  const [properties, setProperties] = useState<Property[]>([])
   const [customerId, setCustomerId] = useState("")
   const [parcelId, setParcelId] = useState("")
+  const [selectedProperty, setSelectedProperty] = useState<Property | null>(null)
   const [amountDue, setAmountDue] = useState("")
   const [amountPaid, setAmountPaid] = useState("")
   const [balance, setBalance] = useState("0.00")
   const [date, setDate] = useState(new Date().toISOString().split("T")[0])
   const [paidDate, setPaidDate] = useState("")
   const [method, setMethod] = useState("credit_card")
-  const [status, setStatus] = useState("pending")
+  const [status, setStatus] = useState("not_paid")
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingCustomers, setIsLoadingCustomers] = useState(true)
+  const [isLoadingProperties, setIsLoadingProperties] = useState(false)
 
   const router = useRouter()
   const { toast } = useToast()
@@ -56,16 +68,50 @@ export function PaymentForm() {
     fetchCustomers()
   }, [toast])
 
-  // Calculate balance and update status when amount due or paid changes
+  // Fetch properties
+  useEffect(() => {
+    const fetchProperties = async () => {
+      try {
+        setIsLoadingProperties(true)
+        const response = await fetch("/api/properties")
+        if (!response.ok) throw new Error("Failed to fetch properties")
+
+        const data = await response.json()
+        setProperties(data.properties)
+      } catch (error) {
+        toast({
+          title: "Error",
+          description: "Failed to load properties",
+          variant: "destructive",
+        })
+      } finally {
+        setIsLoadingProperties(false)
+      }
+    }
+
+    fetchProperties()
+  }, [toast])
+
+  // Calculate balance when amount due or paid changes
   useEffect(() => {
     if (amountDue && amountPaid) {
       const due = Number.parseFloat(amountDue)
       const paid = Number.parseFloat(amountPaid)
       const calculatedBalance = Math.max(0, due - paid)
 
-      setBalance(`${calculatedBalance}`)
+      setBalance(calculatedBalance.toFixed(2))
     }
   }, [amountDue, amountPaid])
+
+  // Update property selection when parcel ID changes
+  useEffect(() => {
+    if (parcelId) {
+      const property = properties.find((p) => p.parcel_id === parcelId)
+      setSelectedProperty(property || null)
+    } else {
+      setSelectedProperty(null)
+    }
+  }, [parcelId, properties])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -82,7 +128,7 @@ export function PaymentForm() {
     if (!amountDue || !amountPaid) {
       toast({
         title: "Error",
-        description: "Please enter amount due and amount paid",
+        description: "Please enter starting balance and amount paid",
         variant: "destructive",
       })
       return
@@ -132,6 +178,18 @@ export function PaymentForm() {
     }
   }
 
+  const getPropertyAddress = (property: Property) => {
+    const parts = []
+    if (property.street_number) parts.push(property.street_number)
+    if (property.street_name) parts.push(property.street_name)
+
+    const streetAddress = parts.join(" ")
+
+    const cityStateZip = [property.city, property.state].filter(Boolean).join(", ")
+
+    return [streetAddress, cityStateZip].filter(Boolean).join(", ") || "No address provided"
+  }
+
   return (
     <Card>
       <form onSubmit={handleSubmit}>
@@ -140,7 +198,9 @@ export function PaymentForm() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="customer">Customer</Label>
+            <Label html For="customer">
+              Customer
+            </Label>
             <Select value={customerId} onValueChange={setCustomerId} disabled={isLoadingCustomers}>
               <SelectTrigger id="customer">
                 <SelectValue placeholder="Select customer" />
@@ -156,13 +216,25 @@ export function PaymentForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="parcel_id">Parcel ID</Label>
-            <Input
-              id="parcel_id"
-              value={parcelId}
-              onChange={(e) => setParcelId(e.target.value)}
-              placeholder="Enter parcel ID"
-            />
+            <Label htmlFor="parcel_id">Property</Label>
+            <Select value={parcelId} onValueChange={setParcelId} disabled={isLoadingProperties}>
+              <SelectTrigger id="parcel_id">
+                <SelectValue placeholder="Select property by Parcel ID" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {properties.map((property) => (
+                  <SelectItem key={property.id} value={property.parcel_id}>
+                    {property.parcel_id} - {getPropertyAddress(property)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {selectedProperty && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Selected property: {getPropertyAddress(selectedProperty)}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2">

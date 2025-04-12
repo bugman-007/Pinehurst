@@ -5,7 +5,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { signOut, useSession } from "next-auth/react"
 import { useToast } from "@/hooks/use-toast"
-import { Users, CreditCard, FileText, Home, LogOut, Menu, X } from "lucide-react"
+import { Users, CreditCard, FileText, Home, LogOut, Menu, X, Building } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export function Sidebar() {
@@ -84,6 +84,19 @@ export function Sidebar() {
 
           {isAdmin && (
             <Link
+              href="/dashboard/properties"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted ${
+                pathname.startsWith("/dashboard/properties") ? "bg-muted font-medium" : ""
+              }`}
+              onClick={closeSidebar}
+            >
+              <Building className="h-5 w-5" />
+              Property Management
+            </Link>
+          )}
+
+          {isAdmin && (
+            <Link
               href="/dashboard/payments"
               className={`flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted ${
                 pathname === "/dashboard/payments" ? "bg-muted font-medium" : ""
@@ -119,6 +132,19 @@ export function Sidebar() {
             </Link>
           )}
 
+          {!isAdmin && (
+            <Link
+              href="/dashboard/user-properties"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted ${
+                pathname === "/dashboard/user-properties" ? "bg-muted font-medium" : ""
+              }`}
+              onClick={closeSidebar}
+            >
+              <Building className="h-5 w-5" />
+              My Properties
+            </Link>
+          )}
+
           <div className="mt-auto pt-4">
             <Button variant="ghost" className="w-full justify-start text-muted-foreground" onClick={handleSignOut}>
               <LogOut className="mr-2 h-5 w-5" />
@@ -130,4 +156,3 @@ export function Sidebar() {
     </>
   )
 }
-
