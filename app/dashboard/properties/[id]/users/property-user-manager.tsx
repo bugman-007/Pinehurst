@@ -143,7 +143,7 @@ export function PropertyUserManager({
         <CardContent>
           <div className="flex items-end gap-4">
             <div className="flex-1">
-              <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+              <Select value={selectedUserId} onValueChange={setSelectedUserId} disabled = {assignedUsers.length > 0}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a user" />
                 </SelectTrigger>

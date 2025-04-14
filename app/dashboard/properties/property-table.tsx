@@ -21,13 +21,16 @@ interface Property {
   zip: string
   created_at: string
   assigned_users_count: number
+  user_name : string
+  user_email : string
+  user_role : string
 }
 
 interface PropertyTableProps {
-  properties: Property[]
+  properties: Property[],
 }
 
-export function PropertyTable({ properties: initialProperties }: PropertyTableProps) {
+export function PropertyTable({ properties: initialProperties}: PropertyTableProps) {
   const [properties, setProperties] = useState<Property[]>(initialProperties)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const { toast } = useToast()
@@ -101,7 +104,7 @@ export function PropertyTable({ properties: initialProperties }: PropertyTablePr
             <TableHead>Parcel ID</TableHead>
             <TableHead>Address</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead>Users</TableHead>
+            <TableHead>User</TableHead>
             <TableHead>Created</TableHead>
             <TableHead className="w-[100px]">Actions</TableHead>
           </TableRow>
@@ -120,10 +123,10 @@ export function PropertyTable({ properties: initialProperties }: PropertyTablePr
                 <TableCell>{getAddress(property)}</TableCell>
                 <TableCell>{getStatusBadge(property.status)}</TableCell>
                 <TableCell>
-                  {property.assigned_users_count > 0 ? (
+                  {property.user_name != null ? (
                     <Badge variant="outline" className="flex items-center gap-1">
                       <Users className="h-3 w-3" />
-                      {property.assigned_users_count}
+                      {property.user_name}
                     </Badge>
                   ) : (
                     <span className="text-muted-foreground">None</span>

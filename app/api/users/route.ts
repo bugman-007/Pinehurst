@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const { name, email, password, role } = await req.json()
+    const { name, email, password, role,address,city,state,zip } = await req.json()
 
     // Validate input
     if (!name || !email || !password) {
@@ -57,13 +57,12 @@ export async function POST(req: Request) {
     const hashedPassword = await hash(password, 10)
 
     // Create user
-    await db.query("INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)", [
+    await db.query("INSERT INTO users (name, email, password, role ,address,city,state,zip) VALUES (?, ?, ?, ?,?,?,?,?)", [
       name,
       email,
       hashedPassword,
-
-      hashedPassword,
       role || "customer",
+      address,city,state,zip
     ])
 
     return NextResponse.json({ message: "User created successfully" }, { status: 201 })

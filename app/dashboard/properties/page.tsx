@@ -1,25 +1,43 @@
-import { Button } from "@/components/ui/button"
-import { requireAdmin } from "@/lib/auth"
-import { db } from "@/lib/db"
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { PropertyTable } from "./property-table"
-import Link from "next/link"
-import { PlusCircle } from "lucide-react"
-import { createPropertiesSchema } from "@/app/api/db-schema-properties"
+import { Button } from "@/components/ui/button";
+import { requireAdmin } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { DashboardLayout } from "@/components/dashboard-layout";
+import { PropertyTable } from "./property-table";
+import Link from "next/link";
+import { PlusCircle } from "lucide-react";
+import { createPropertiesSchema } from "@/app/api/db-schema-properties";
 
 export default async function PropertiesPage() {
-  const user = await requireAdmin()
+  const user = await requireAdmin();
 
   // Ensure the schema exists
-  await createPropertiesSchema()
+  await createPropertiesSchema();
 
   // Fetch properties from the database
-  const properties = await db.query(`
-    SELECT p.*, 
-      (SELECT COUNT(*) FROM property_users pu WHERE pu.property_id = p.id) as assigned_users_count
-    FROM properties p
-    ORDER BY p.created_at DESC
-  `)
+  // const properties = await db.query(`
+  //   SELECT p.*,
+  //     (SELECT COUNT(*) FROM property_users pu WHERE pu.property_id = p.id) as assigned_users_count
+  //   FROM properties p
+  //   ORDER BY p.created_at DESC
+  // `);
+
+  // const propertiesWithUsers = db.query(
+  //   `SELECT property_id, user_id FROM property_users`
+  // );
+
+  // const users = await db.query("SELECT id, name, email, role FROM users");
+
+  const properties = await db.query(`SELECT 
+    p.*,
+    u.name AS user_name,
+    u.email AS user_email,
+    u.role AS user_role
+FROM 
+    properties p
+LEFT JOIN 
+    property_users pu ON p.id = pu.property_id
+LEFT JOIN 
+    users u ON pu.user_id = u.id;`);
 
   return (
     <DashboardLayout
@@ -38,5 +56,5 @@ export default async function PropertiesPage() {
         <PropertyTable properties={properties} />
       </div>
     </DashboardLayout>
-  )
+  );
 }

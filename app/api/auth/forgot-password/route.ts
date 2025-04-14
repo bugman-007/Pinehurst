@@ -58,20 +58,23 @@ export async function POST(req: Request) {
     
     // For development purposes, include the token in the response
     // In production, you would NOT include this in the response
-    if (process.env.NODE_ENV === "development") {
-        return NextResponse.json(
-            {
-                message: "Password reset link sent",
-                devInfo: { token, resetLink },
-            },
-            { status: 200 },
-        )
-    }
+    // if (process.env.NODE_ENV === "development") {
+    //     return NextResponse.json(
+    //         {
+    //             message: "Password reset link sent",
+    //             devInfo: { token, resetLink },
+    //         },
+    //         { status: 200 },
+    //     )
+    // }
     
+  console.log("111111111111111111111111111111111111111111")
+  console.log(email)
     await sendMail({
         to: email,
         subject: "Password Reset Request",
         text:  `Click the following link to reset your password: ${resetLink}`,
+        html: `<p>Click the following link to reset your password: <a href="${resetLink}">${resetLink}</a></p>`,
     })
     
     return NextResponse.json(

@@ -17,6 +17,7 @@ export default async function EditPropertyPage({ params }: EditPropertyPageProps
 
   // Fetch property data
   const properties = await db.query("SELECT * FROM properties WHERE id = ?", [propertyId])
+  
 
   if (!properties || properties.length === 0) {
     notFound()
