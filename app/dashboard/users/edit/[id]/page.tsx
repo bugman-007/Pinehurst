@@ -16,7 +16,7 @@ export default async function EditUserPage({ params }: EditUserPageProps) {
   const userId = params.id
 
   // Fetch user data
-  const users = await db.query("SELECT id, name, email, role FROM users WHERE id = ?", [userId])
+  const users = await db.query("SELECT id, name, email, role, address, city, state, zip FROM users WHERE id = ?", [userId])
 
   if (!users || users.length === 0) {
     notFound()
