@@ -49,7 +49,7 @@ export default async function PropertyUsersPage({ params }: PropertyUsersPagePro
 
   return (
     <DashboardLayout
-      heading={`Manage Users for `}
+      heading={`Manage Users`}
       subheading="Assign or remove users from this property"
     >
       <div className="max-w-4xl mx-auto">
