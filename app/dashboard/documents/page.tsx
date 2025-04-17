@@ -1,16 +1,16 @@
-import { Button } from "@/components/ui/button"
-import { requireAuth } from "@/lib/auth"
-import { db } from "@/lib/db"
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { DocumentTable } from "./document-table"
-import Link from "next/link"
-import { Upload } from "lucide-react"
+import { Button } from "@/components/ui/button";
+import { requireAuth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { DashboardLayout } from "@/components/dashboard-layout";
+import { DocumentTable } from "./document-table";
+import Link from "next/link";
+import { Upload } from "lucide-react";
 
 export default async function DocumentsPage() {
-  const user = await requireAuth()
+  const user = await requireAuth();
 
   // Fetch documents based on user role
-  let documents
+  let documents;
 
   if (user.role === "admin") {
     // Admin can see all documents
@@ -19,7 +19,7 @@ export default async function DocumentsPage() {
       FROM documents d
       JOIN users u ON d.user_id = u.id
       ORDER BY d.uploaded_at DESC
-    `)
+    `);
   } else {
     // Customer can only see their own documents
     documents = await db.query(
@@ -30,27 +30,57 @@ export default async function DocumentsPage() {
       WHERE d.user_id = ?
       ORDER BY d.uploaded_at DESC
     `,
-      [user.id],
-    )
+      [user.id]
+    );
   }
 
   return (
-    <DashboardLayout
-      heading={user.role === "admin" ? "Document Management" : "My Documents"}
-      subheading={user.role === "admin" ? "Manage all documents in the system" : "View and manage your documents"}
-      action={
-        <Button asChild>
-          <Link href="/dashboard/documents/upload">
-            <Upload className="mr-2 h-4 w-4" />
-            Upload Document
-          </Link>
-        </Button>
-      }
-    >
-      <div className="rounded-lg border bg-card">
-        <DocumentTable documents={documents} isAdmin={user.role === "admin"} />
-      </div>
-    </DashboardLayout>
-  )
+    <div>
+      {user.role === "admin" ? (
+        <DashboardLayout
+          heading={
+            user.role === "admin" ? "Document Management" : "My Documents"
+          }
+          subheading={
+            user.role === "admin"
+              ? "Manage all documents in the system"
+              : "View and manage your documents"
+          }
+          action={
+            <Button asChild>
+              <Link href="/dashboard/documents/upload">
+                <Upload className="mr-2 h-4 w-4" />
+                Upload Document
+              </Link>
+            </Button>
+          }
+        >
+          <div className="rounded-lg border bg-card">
+            <DocumentTable
+              documents={documents}
+              isAdmin={user.role === "admin"}
+            />
+          </div>
+        </DashboardLayout>
+      ) : (
+        <>
+          <div className="flex justify-between items-center m-4">
+            <h1 className = "text-2xl font-bold">Document Management</h1>
+            <Button asChild>
+              <Link href="/dashboard/documents/upload">
+                <Upload className="mr-2 h-4 w-4" />
+                Upload Document
+              </Link>
+            </Button>
+          </div>
+          <div className="rounded-lg border bg-card">
+            <DocumentTable
+              documents={documents}
+              isAdmin={user.role === "admin"}
+            />
+          </div>
+        </>
+      )}
+    </div>
+  );
 }
-

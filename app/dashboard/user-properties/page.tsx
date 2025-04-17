@@ -2,6 +2,9 @@ import { requireAuth } from "@/lib/auth"
 import { db } from "@/lib/db"
 import { DashboardLayout } from "@/components/dashboard-layout"
 import { UserPropertyList } from "./user-property-list"
+import PaymentHistoryPage from "../payment-history/page"
+import DocumentsPage from "../documents/page"
+// import PaymentsPage from "../payments/page"
 
 export default async function UserPropertiesPage() {
   const user = await requireAuth()
@@ -22,6 +25,13 @@ export default async function UserPropertiesPage() {
     <DashboardLayout heading="My Properties" subheading="View properties assigned to you">
       <div className="max-w-5xl mx-auto">
         <UserPropertyList properties={properties} />
+      </div>
+      
+      <div className="rounded-lg border bg-card m-6 mt-10 mb-10">
+        <DocumentsPage/>
+      </div>
+      <div className="rounded-lg border bg-card m-6 mt-10 mb-10">
+        <PaymentHistoryPage/>
       </div>
     </DashboardLayout>
   )

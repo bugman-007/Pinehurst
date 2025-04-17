@@ -125,10 +125,6 @@ export function PropertyTable({ properties: initialProperties}: PropertyTablePro
                 <TableCell>
                   {property.user_name != null ? (
                     <span className="text-foreground align-center">{property.user_name}</span>
-                    // <Badge variant="outline" className="flex items-center gap-1">
-                    //   <Users className="h-3 w-3" />
-                    //   {property.user_name}
-                    // </Badge>
                   ) : (
                     <span className="text-muted-foreground">None</span>
                   )}

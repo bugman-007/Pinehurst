@@ -1,10 +1,10 @@
-import { requireAuth } from "@/lib/auth"
-import { db } from "@/lib/db"
-import { DashboardLayout } from "@/components/dashboard-layout"
-import { PaymentHistoryTable } from "./payment-history-table"
+import { requireAuth } from "@/lib/auth";
+import { db } from "@/lib/db";
+import { DashboardLayout } from "@/components/dashboard-layout";
+import { PaymentHistoryTable } from "./payment-history-table";
 
 export default async function PaymentHistoryPage() {
-  const user = await requireAuth()
+  const user = await requireAuth();
 
   // Fetch payments for the current user
   const payments = await db.query(
@@ -14,15 +14,22 @@ export default async function PaymentHistoryPage() {
     WHERE p.customer_id = ?
     ORDER BY p.date DESC
   `,
-    [user.id],
-  )
+    [user.id]
+  );
 
   return (
-    <DashboardLayout heading="Payment History" subheading="View your payment history and transaction details">
-      <div className="rounded-lg border bg-card">
-        <PaymentHistoryTable payments={payments} />
+    <div>
+      {/* <DashboardLayout
+        heading="Payment History"
+        subheading="View your payment history and transaction details"
+      > */}
+      <div className="flex justify-between items-center m-4">
+      <h1 className = "text-2xl font-bold">Payment History</h1>
       </div>
-    </DashboardLayout>
-  )
+        <div className="rounded-lg border bg-card">
+          <PaymentHistoryTable payments={payments} />
+        </div>
+      {/* </DashboardLayout> */}
+    </div>
+  );
 }
-

@@ -179,8 +179,8 @@ export function DocumentTable({ documents, isAdmin }: DocumentTableProps) {
             {previewDocument && (
               <iframe
                 src={previewDocument.file_url}
-                className="w-full h-[60vh] border rounded"
-                title={previewDocument.file_url.split("/").pop() || "Document preview"}
+                // className="w-full h-[60vh] border rounded"
+                // title={previewDocument.file_url.split("/").pop() || "Document preview"}
               />
             )}
           </div>

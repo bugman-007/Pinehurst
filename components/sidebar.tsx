@@ -1,37 +1,51 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { signOut, useSession } from "next-auth/react"
-import { useToast } from "@/hooks/use-toast"
-import { Users, CreditCard, FileText, Home, LogOut, Menu, X, Building } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { signOut, useSession } from "next-auth/react";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Users,
+  CreditCard,
+  FileText,
+  Home,
+  LogOut,
+  Menu,
+  X,
+  Building,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export function Sidebar() {
-  const [isOpen, setIsOpen] = useState(false)
-  const pathname = usePathname()
-  const { toast } = useToast()
-  const { data: session } = useSession()
+  const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+  const { toast } = useToast();
+  const { data: session } = useSession();
 
-  const isAdmin = session?.user?.role === "admin"
+  const isAdmin = session?.user?.role === "admin";
+  const isComplete =
+    session?.user?.address !== "" &&
+    session?.user?.city !== "" &&
+    session?.user?.state !== "" &&
+    session?.user?.zip !== "";
 
   const handleSignOut = async () => {
-    await signOut({ redirect: false })
+    await signOut({ redirect: false });
     toast({
       title: "Signed out",
       description: "You have been signed out successfully",
-    })
-    window.location.href = "/"
-  }
+    });
+    window.location.href = "/";
+  };
 
   const toggleSidebar = () => {
-    setIsOpen(!isOpen)
-  }
+    setIsOpen(!isOpen);
+  };
 
   const closeSidebar = () => {
-    setIsOpen(false)
-  }
+    setIsOpen(false);
+  };
 
   return (
     <>
@@ -41,7 +55,9 @@ export function Sidebar() {
         </Button>
       </div>
       <div
-        className={`fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden ${isOpen ? "block" : "hidden"}`}
+        className={`fixed inset-0 bg-background/80 backdrop-blur-sm z-40 md:hidden ${
+          isOpen ? "block" : "hidden"
+        }`}
         onClick={closeSidebar}
       />
       <aside
@@ -50,10 +66,19 @@ export function Sidebar() {
         }`}
       >
         <div className="flex h-16 items-center justify-between px-4 border-b">
-          <Link href="/dashboard" className="font-semibold text-lg" onClick={closeSidebar}>
-            Admin Dashboard
+          <Link
+            href="/dashboard"
+            className="font-semibold text-lg"
+            onClick={closeSidebar}
+          >
+            {isAdmin ? "Admin Dashboard" : "User Dashboard"}
           </Link>
-          <Button variant="ghost" size="icon" className="md:hidden" onClick={closeSidebar}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={closeSidebar}
+          >
             <X className="h-5 w-5" />
           </Button>
         </div>
@@ -86,7 +111,9 @@ export function Sidebar() {
             <Link
               href="/dashboard/properties"
               className={`flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted ${
-                pathname.startsWith("/dashboard/properties") ? "bg-muted font-medium" : ""
+                pathname.startsWith("/dashboard/properties")
+                  ? "bg-muted font-medium"
+                  : ""
               }`}
               onClick={closeSidebar}
             >
@@ -108,35 +135,43 @@ export function Sidebar() {
             </Link>
           )}
 
-          <Link
-            href="/dashboard/documents"
-            className={`flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted ${
-              pathname === "/dashboard/documents" ? "bg-muted font-medium" : ""
-            }`}
-            onClick={closeSidebar}
-          >
-            <FileText className="h-5 w-5" />
-            Documents
-          </Link>
+          {isAdmin && (
+            <Link
+              href="/dashboard/documents"
+              className={`flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted ${
+                pathname === "/dashboard/documents"
+                  ? "bg-muted font-medium"
+                  : ""
+              }`}
+              onClick={closeSidebar}
+            >
+              <FileText className="h-5 w-5" />
+              Documents
+            </Link>
+          )}
 
-          {!isAdmin && (
+          {/* {!isAdmin && isComplete && (
             <Link
               href="/dashboard/payment-history"
               className={`flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted ${
-                pathname === "/dashboard/payment-history" ? "bg-muted font-medium" : ""
+                pathname === "/dashboard/payment-history"
+                  ? "bg-muted font-medium"
+                  : ""
               }`}
               onClick={closeSidebar}
             >
               <CreditCard className="h-5 w-5" />
               Payment History
             </Link>
-          )}
+          )} */}
 
           {!isAdmin && (
             <Link
               href="/dashboard/user-properties"
               className={`flex items-center gap-2 px-3 py-2 rounded-md hover:bg-muted ${
-                pathname === "/dashboard/user-properties" ? "bg-muted font-medium" : ""
+                pathname === "/dashboard/user-properties"
+                  ? "bg-muted font-medium"
+                  : ""
               }`}
               onClick={closeSidebar}
             >
@@ -146,7 +181,11 @@ export function Sidebar() {
           )}
 
           <div className="mt-auto pt-4">
-            <Button variant="ghost" className="w-full justify-start text-muted-foreground" onClick={handleSignOut}>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-muted-foreground"
+              onClick={handleSignOut}
+            >
               <LogOut className="mr-2 h-5 w-5" />
               Sign out
             </Button>
@@ -154,5 +193,5 @@ export function Sidebar() {
         </nav>
       </aside>
     </>
-  )
+  );
 }
