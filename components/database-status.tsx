@@ -54,7 +54,7 @@ export function DatabaseStatus() {
   }, [])
 
   return (
-    <Card>
+    <Card style={{flexGrow:1}}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
           <CardTitle className="text-sm font-medium">Database Status</CardTitle>

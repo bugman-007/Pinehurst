@@ -80,7 +80,7 @@ export default function UserCard({ initialUser }: UserCardProps) {
   };
 
   return (
-    <Card>
+    <Card style={{flexGrow:1}}>
       <CardHeader>
         <div className="flex justify-between items-center">
           <div>

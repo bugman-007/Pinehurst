@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { writeFile } from "fs/promises";
 import path, { join } from "path";
 import { mkdir } from "fs/promises";
-import fs from 'fs'
+import fs from "fs";
 
 // Define the upload directory on your VPS
 // Change this to your desired location on the VPS
@@ -64,14 +64,10 @@ export async function POST(req: Request) {
     const fileUrl = `/api/documents/upload/${fileName}`;
 
     // Save the document record in the database
-    
-    await db.query("SET FOREIGN_KEY_CHECKS = 0");
     await db.query(
       "INSERT INTO documents (user_id, file_url, uploaded_at) VALUES (?, ?, NOW())",
-      [-1, fileUrl]
+      [user.id, fileUrl]
     );
-    
-    await db.query("SET FOREIGN_KEY_CHECKS = 1");
 
     return NextResponse.json(
       { message: "Document uploaded successfully", fileUrl },
@@ -88,10 +84,14 @@ export async function POST(req: Request) {
 
 export async function GET(
   req: Request,
-  { params }: { params: { path: string[] } }
+  { params }: { params: { id: string[] } }
 ) {
-
-  const filePath = path.join(UPLOAD_DIR, ...params.path);
+//   const filePath = params.id;
+//   console.log(
+//     "GEGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG",
+//     path
+//   );
+  const filePath = path.join(UPLOAD_DIR, params.id);
 
   if (!fs.existsSync(filePath)) {
     return NextResponse.json({ error: "File not found" }, { status: 404 });

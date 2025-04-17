@@ -93,7 +93,7 @@ export default async function Dashboard() {
     >
       <div className="grid gap-6">
         {/* Stats Cards */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className={`grid gap-6 md:grid-cols-2 ${isAdmin ?"lg:grid-cols-3":"lg:grid-cols-2"}`}>
           {isAdmin && (
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -143,13 +143,10 @@ export default async function Dashboard() {
         </div>
 
         {/* Account Information */}
-        <div className="grid gap-6 md:grid-cols-2">
+        {/* <div className="grid gap-6 md:grid-cols-2"> */}
+        <div className="flex gap-6 ">
           <UserCard
             initialUser={user}
-            // onSave={(updatedUser:any) => {
-            //   console.log("Saving user:", updatedUser);
-            //   // Add your save logic here (API call, state update, etc.)
-            // }}
           ></UserCard>
           {isAdmin && <DatabaseStatusWrapper />}
         </div>

@@ -19,17 +19,17 @@ export default async function PaymentHistoryPage() {
 
   return (
     <div>
-      {/* <DashboardLayout
+      <DashboardLayout
         heading="Payment History"
         subheading="View your payment history and transaction details"
-      > */}
-      <div className="flex justify-between items-center m-4">
-      <h1 className = "text-2xl font-bold">Payment History</h1>
-      </div>
+      >
+        <div className="flex justify-between items-center m-4">
+          <h1 className="text-2xl font-bold">Payment History</h1>
+        </div>
         <div className="rounded-lg border bg-card">
           <PaymentHistoryTable payments={payments} />
         </div>
-      {/* </DashboardLayout> */}
+      </DashboardLayout>
     </div>
   );
 }
