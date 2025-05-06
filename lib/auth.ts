@@ -1,71 +1,79 @@
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
-import { redirect } from "next/navigation"
-import { db } from "@/lib/db"
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { redirect } from "next/navigation";
+import { db } from "@/lib/db";
 
-// Define the custom session type
-interface CustomSession {
-  user: {
-    id: string
-    name: string
-    email: string
-    role: string
-    address?: string
-    city?: string
-    state?: string
-    zip?: string
+// Define the custom session user type
+export interface CustomSessionUser {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zip?: string | null;
+}
+
+export interface CustomSession {
+  user: CustomSessionUser;
+}
+
+// ✅ 1. Always call in async function context
+export async function getSession(): Promise<CustomSession | null> {
+  try {
+    const session = await getServerSession(authOptions);
+    return session as CustomSession;
+  } catch (err) {
+    console.error("Failed to get session:", err);
+    return null;
   }
 }
 
-export async function getSession(): Promise<CustomSession | null> {
-  return await getServerSession(authOptions)
+// ✅ 2. Get current user (can be called in pages/APIs)
+export async function getCurrentUser(): Promise<CustomSessionUser | null> {
+  const session = await getSession();
+  return session?.user || null;
 }
 
-export async function getCurrentUser() {
-  const session = await getSession()
-  return session?.user || null
-}
-
-export async function requireAuth() {
-  const session = await getSession()
+// ✅ 3. Require user (redirects if not logged in)
+export async function requireAuth(): Promise<CustomSessionUser> {
+  const session = await getSession();
 
   if (!session?.user) {
-    redirect("/auth/signin")
+    redirect("/auth/signin"); // Only use in Server Components
   }
 
-  // Fetch complete user data from the database using the ID from the session
   try {
-    const userResult = await db.query("SELECT * FROM users WHERE id = ?", [session.user.id])
+    const [result]: any[] = await db.query("SELECT * FROM users WHERE id = ?", [session.user.id]);
 
-    if (userResult && userResult[0]) {
-      // Return complete user data
+    if (result) {
       return {
-        id: userResult[0].id.toString(),
-        name: userResult[0].name,
-        email: userResult[0].email,
-        role: userResult[0].role,
-        address: userResult[0].address,
-        city: userResult[0].city,
-        state: userResult[0].state,
-        zip: userResult[0].zip,
-      }
+        id: result.id.toString(),
+        name: result.name,
+        email: result.email,
+        role: result.role,
+        address: result.address,
+        city: result.city,
+        state: result.state,
+        zip: result.zip,
+      };
     }
 
-    // Fallback to session user if database query fails
-    return session.user
-  } catch (error) {
-    console.error("Error fetching complete user data:", error)
-    // Fallback to session user if database query fails
-    return session.user
+    return session.user;
+  } catch (err) {
+    console.error("Error fetching full user from DB:", err);
+    return session.user;
   }
 }
 
-export async function requireAdmin() {
-  const user = await requireAuth()
+// ✅ 4. Require admin (redirects if not admin)
+export async function requireAdmin(): Promise<CustomSessionUser> {
+  const user = await requireAuth();
 
   if (user.role !== "admin") {
-    redirect("/dashboard")
+    redirect("/dashboard"); // Use this only in Server Component route
   }
 
-  return user
+  return user;
 }

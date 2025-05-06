@@ -28,9 +28,10 @@ interface Payment {
 
 interface PaymentTableProps {
   payments: Payment[]
+  readOnly?: boolean
 }
 
-export function PaymentTable({ payments: initialPayments }: PaymentTableProps) {
+export function PaymentTable({ payments: initialPayments, readOnly = false }: PaymentTableProps) {
   const [payments, setPayments] = useState<Payment[]>(initialPayments)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -170,20 +171,20 @@ export function PaymentTable({ payments: initialPayments }: PaymentTableProps) {
             <TableHead>Paid Date</TableHead>
             <TableHead>Method</TableHead>
             <TableHead>Status</TableHead>
-            <TableHead className="w-[100px]">Actions</TableHead>
+            {!readOnly && <TableHead className="w-[100px]">Actions</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
           {payments.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={10} className="text-center">
+              <TableCell colSpan={readOnly ? 9 : 10} className="text-center">
                 No payments found
               </TableCell>
             </TableRow>
           ) : (
             payments.map((payment) => (
               <TableRow key={payment.id}>
-                {editingId === payment.id && editedPayment ? (
+                {editingId === payment.id && editedPayment && !readOnly ? (
                   // Editing mode
                   <>
                     <TableCell>{payment.customer_name}</TableCell>
@@ -271,18 +272,20 @@ export function PaymentTable({ payments: initialPayments }: PaymentTableProps) {
                         </SelectContent>
                       </Select>
                     </TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button variant="outline" size="icon" onClick={handleSaveEdit}>
-                          <Save className="h-4 w-4" />
-                          <span className="sr-only">Save</span>
-                        </Button>
-                        <Button variant="outline" size="icon" onClick={handleCancelEdit}>
-                          <X className="h-4 w-4" />
-                          <span className="sr-only">Cancel</span>
-                        </Button>
-                      </div>
-                    </TableCell>
+                    {!readOnly && (
+                      <TableCell>
+                        <div className="flex space-x-2">
+                          <Button variant="outline" size="icon" onClick={handleSaveEdit}>
+                            <Save className="h-4 w-4" />
+                            <span className="sr-only">Save</span>
+                          </Button>
+                          <Button variant="outline" size="icon" onClick={handleCancelEdit}>
+                            <X className="h-4 w-4" />
+                            <span className="sr-only">Cancel</span>
+                          </Button>
+                        </div>
+                      </TableCell>
+                    )}
                   </>
                 ) : (
                   // View mode
@@ -304,39 +307,41 @@ export function PaymentTable({ payments: initialPayments }: PaymentTableProps) {
                     </TableCell>
                     <TableCell className="capitalize">{payment.method.replace("_", " ")}</TableCell>
                     <TableCell>{getStatusBadge(payment.status)}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Open menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem asChild>
-                            <Button
-                              variant="ghost"
-                              className="w-full justify-start cursor-pointer"
-                              onClick={() => handleEdit(payment)}
-                            >
-                              <Pencil className="mr-2 h-4 w-4" />
-                              Edit
+                    {!readOnly && (
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Open menu</span>
                             </Button>
-                          </DropdownMenuItem>
-                          <DropdownMenuItem asChild>
-                            <Button
-                              variant="ghost"
-                              className="w-full justify-start cursor-pointer text-destructive"
-                              onClick={() => handleDelete(payment.id)}
-                              disabled={isDeleting === payment.id}
-                            >
-                              <Trash className="mr-2 h-4 w-4" />
-                              {isDeleting === payment.id ? "Deleting..." : "Delete"}
-                            </Button>
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem asChild>
+                              <Button
+                                variant="ghost"
+                                className="w-full justify-start cursor-pointer"
+                                onClick={() => handleEdit(payment)}
+                              >
+                                <Pencil className="mr-2 h-4 w-4" />
+                                Edit
+                              </Button>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Button
+                                variant="ghost"
+                                className="w-full justify-start cursor-pointer text-destructive"
+                                onClick={() => handleDelete(payment.id)}
+                                disabled={isDeleting === payment.id}
+                              >
+                                <Trash className="mr-2 h-4 w-4" />
+                                {isDeleting === payment.id ? "Deleting..." : "Delete"}
+                              </Button>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    )}
                   </>
                 )}
               </TableRow>

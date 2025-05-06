@@ -1,6 +1,5 @@
-import mysql from "mysql2/promise"
+import mysql from "mysql2/promise";
 
-// Create a connection pool
 const pool = mysql.createPool({
   host: process.env.MYSQL_HOST,
   user: process.env.MYSQL_USER,
@@ -8,37 +7,46 @@ const pool = mysql.createPool({
   database: process.env.MYSQL_DATABASE,
   port: Number.parseInt(process.env.MYSQL_PORT || "3306"),
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 30,
   queueLimit: 0,
-  connectTimeout: 3000, //  second timeout
+  connectTimeout: 3000,
   ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : undefined,
-  debug: process.env.NODE_ENV === "development" // Enable debug logs in dev
+  // debug: process.env.NODE_ENV === "development",
 });
 
-export const db = {
-  query: async (sql: string, params?: any[]) => {
-    try {
-      const [rows] = await pool.execute(sql, params)
-      return rows
-    } catch (error) {
-      console.error("Database error:", error)
-      throw error
-    }
-  },
-
-  // Helper method to test the connection
-  testConnection: async () => {
-    try {
-      await pool.query("SELECT 1")
-      return { success: true, message: "Database connection successful" }
-    } catch (error) {
-      console.error("Database connection error:", error)
-      return {
-        success: false,
-        message: "Database connection failed",
-        error: error instanceof Error ? error.message : String(error),
-      }
-    }
-  },
+// Generic query function
+async function query<T = any>(sql: string, params?: any[]): Promise<T[]> {
+  try {
+    const [rows] = await pool.execute(sql, params);
+    return rows as T[];
+  } catch (error) {
+    console.error("Database error:", error);
+    throw error;
+  }
 }
 
+// Health check
+async function testConnection() {
+  try {
+    await pool.query("SELECT 1");
+    return { success: true, message: "Database connection successful" };
+  } catch (error) {
+    console.error("Database connection error:", error);
+    return {
+      success: false,
+      message: "Database connection failed",
+      error: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+// Close pool (useful for graceful shutdown)
+async function close() {
+  await pool.end();
+}
+
+export const db = {
+  query,
+  testConnection,
+  close,
+};

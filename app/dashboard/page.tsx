@@ -11,10 +11,11 @@ import { DashboardLayout } from "@/components/dashboard-layout";
 import { CreditCard, FileText, Users } from "lucide-react";
 import { DatabaseStatusWrapper } from "@/components/database-status-wrapper";
 import UserCard from "@/components/UserCard";
+import { PaymentTable } from "./payments/payment-table";
 
 export default async function Dashboard() {
   const user = await requireAuth();
-  console.log(user)
+  console.log(user);
   const isAdmin = user.role === "admin";
 
   // Fetch statistics based on user role
@@ -50,6 +51,14 @@ export default async function Dashboard() {
 
     stats.totalPayments = paymentsCount[0].count;
     stats.totalDocuments = documentsCount[0].count;
+  }
+
+  let userPayments = [];
+  if (!isAdmin) {
+    userPayments = await db.query(
+      `SELECT p.id, p.customer_id, p.parcel_id, p.amount_due, p.amount_paid, p.balance, p.date, p.paid_date, p.method, p.status, u.name as customer_name FROM payments p JOIN users u ON p.customer_id = u.id WHERE p.customer_id = ? ORDER BY p.date DESC`,
+      [user.id]
+    );
   }
 
   async function onSave(user: {
@@ -93,7 +102,11 @@ export default async function Dashboard() {
     >
       <div className="grid gap-6">
         {/* Stats Cards */}
-        <div className={`grid gap-6 md:grid-cols-2 ${isAdmin ?"lg:grid-cols-3":"lg:grid-cols-2"}`}>
+        <div
+          className={`grid gap-6 md:grid-cols-2 ${
+            isAdmin ? "lg:grid-cols-3" : "lg:grid-cols-2"
+          }`}
+        >
           {isAdmin && (
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -142,12 +155,17 @@ export default async function Dashboard() {
           </Card>
         </div>
 
+        {/* User Payments Table */}
+        {!isAdmin && (
+          <div className="mt-8">
+            <h2 className="text-xl font-semibold mb-4">Your Payments</h2>
+            <PaymentTable payments={userPayments} readOnly />
+          </div>
+        )}
+
         {/* Account Information */}
-        {/* <div className="grid gap-6 md:grid-cols-2"> */}
         <div className="flex gap-6 ">
-          <UserCard
-            initialUser={user}
-          ></UserCard>
+          <UserCard initialUser={user}></UserCard>
           {isAdmin && <DatabaseStatusWrapper />}
         </div>
       </div>
