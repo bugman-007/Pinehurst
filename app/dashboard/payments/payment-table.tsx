@@ -24,6 +24,7 @@ interface Payment {
   paid_date: string | null
   method: string
   status: string
+  notes?: string;
 }
 
 interface PaymentTableProps {
@@ -36,8 +37,13 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editedPayment, setEditedPayment] = useState<Payment | null>(null)
+  const [notesModalOpen, setNotesModalOpen] = useState(false);
+  const [notesValue, setNotesValue] = useState("");
+  const [notesPaymentId, setNotesPaymentId] = useState<string | null>(null);
   const { toast } = useToast()
   const router = useRouter()
+  const [sortBy, setSortBy] = useState<keyof Payment | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const handleEdit = (payment: Payment) => {
     setEditingId(payment.id)
@@ -157,20 +163,158 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
     }
   }
 
+  const dateFields = ["date", "paid_date"];
+  const numericFields = ["amount_due", "amount_paid", "balance"];
+
+  const sortedPayments = [...payments].sort((a, b) => {
+    if (!sortBy) return 0;
+    let aValue = a[sortBy];
+    let bValue = b[sortBy];
+
+    // Numeric sort
+    if (numericFields.includes(sortBy)) {
+      aValue = Number(aValue);
+      bValue = Number(bValue);
+      return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
+    }
+
+    // Date sort
+    if (dateFields.includes(sortBy)) {
+      const aTime = aValue ? new Date(aValue).getTime() : 0;
+      const bTime = bValue ? new Date(bValue).getTime() : 0;
+      return sortDirection === "asc" ? aTime - bTime : bTime - aTime;
+    }
+
+    // String sort
+    if (aValue == null) return 1;
+    if (bValue == null) return -1;
+    return sortDirection === "asc"
+      ? String(aValue).localeCompare(String(bValue))
+      : String(bValue).localeCompare(String(aValue));
+  });
+
   return (
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Customer</TableHead>
-            <TableHead>Parcel ID</TableHead>
-            <TableHead>Starting Balance</TableHead>
-            <TableHead>Amount Paid</TableHead>
-            <TableHead>Ending Balance</TableHead>
-            <TableHead>Due Date</TableHead>
-            <TableHead>Paid Date</TableHead>
-            <TableHead>Method</TableHead>
-            <TableHead>Status</TableHead>
+            <TableHead
+              onClick={() => {
+                if (sortBy === "customer_name") {
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                } else {
+                  setSortBy("customer_name");
+                  setSortDirection("asc");
+                }
+              }}
+              className="cursor-pointer"
+            >
+              Customer {sortBy === "customer_name" ? (sortDirection === "asc" ? "▲" : "▼") : ""}
+            </TableHead>
+            <TableHead
+              onClick={() => {
+                if (sortBy === "parcel_id") {
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                } else {
+                  setSortBy("parcel_id");
+                  setSortDirection("asc");
+                }
+              }}
+              className="cursor-pointer"
+            >
+              Parcel ID {sortBy === "parcel_id" ? (sortDirection === "asc" ? "▲" : "▼") : ""}
+            </TableHead>
+            <TableHead
+              onClick={() => {
+                if (sortBy === "amount_due") {
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                } else {
+                  setSortBy("amount_due");
+                  setSortDirection("asc");
+                }
+              }}
+              className="cursor-pointer"
+            >
+              Starting Balance {sortBy === "amount_due" ? (sortDirection === "asc" ? "▲" : "▼") : ""}
+            </TableHead>
+            <TableHead
+              onClick={() => {
+                if (sortBy === "amount_paid") {
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                } else {
+                  setSortBy("amount_paid");
+                  setSortDirection("asc");
+                }
+              }}
+              className="cursor-pointer"
+            >
+              Amount Paid {sortBy === "amount_paid" ? (sortDirection === "asc" ? "▲" : "▼") : ""}
+            </TableHead>
+            <TableHead
+              onClick={() => {
+                if (sortBy === "balance") {
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                } else {
+                  setSortBy("balance");
+                  setSortDirection("asc");
+                }
+              }}
+              className="cursor-pointer"
+            >
+              Ending Balance {sortBy === "balance" ? (sortDirection === "asc" ? "▲" : "▼") : ""}
+            </TableHead>
+            <TableHead
+              onClick={() => {
+                if (sortBy === "date") {
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                } else {
+                  setSortBy("date");
+                  setSortDirection("asc");
+                }
+              }}
+              className="cursor-pointer"
+            >
+              Due Date {sortBy === "date" ? (sortDirection === "asc" ? "▲" : "▼") : ""}
+            </TableHead>
+            <TableHead
+              onClick={() => {
+                if (sortBy === "paid_date") {
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                } else {
+                  setSortBy("paid_date");
+                  setSortDirection("asc");
+                }
+              }}
+              className="cursor-pointer"
+            >
+              Paid Date {sortBy === "paid_date" ? (sortDirection === "asc" ? "▲" : "▼") : ""}
+            </TableHead>
+            <TableHead
+              onClick={() => {
+                if (sortBy === "method") {
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                } else {
+                  setSortBy("method");
+                  setSortDirection("asc");
+                }
+              }}
+              className="cursor-pointer"
+            >
+              Method {sortBy === "method" ? (sortDirection === "asc" ? "▲" : "▼") : ""}
+            </TableHead>
+            <TableHead
+              onClick={() => {
+                if (sortBy === "status") {
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                } else {
+                  setSortBy("status");
+                  setSortDirection("asc");
+                }
+              }}
+              className="cursor-pointer"
+            >
+              Status {sortBy === "status" ? (sortDirection === "asc" ? "▲" : "▼") : ""}
+            </TableHead>
             {!readOnly && <TableHead className="w-[100px]">Actions</TableHead>}
           </TableRow>
         </TableHeader>
@@ -182,7 +326,7 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
               </TableCell>
             </TableRow>
           ) : (
-            payments.map((payment) => (
+            sortedPayments.map((payment) => (
               <TableRow key={payment.id}>
                 {editingId === payment.id && editedPayment && !readOnly ? (
                   // Editing mode
@@ -330,6 +474,19 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
                             <DropdownMenuItem asChild>
                               <Button
                                 variant="ghost"
+                                className="w-full justify-start cursor-pointer"
+                                onClick={() => {
+                                  setNotesModalOpen(true);
+                                  setNotesValue(payment.notes || "");
+                                  setNotesPaymentId(payment.id);
+                                }}
+                              >
+                                📝 View/Edit Notes
+                              </Button>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem asChild>
+                              <Button
+                                variant="ghost"
                                 className="w-full justify-start cursor-pointer text-destructive"
                                 onClick={() => handleDelete(payment.id)}
                                 disabled={isDeleting === payment.id}
@@ -349,6 +506,60 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
           )}
         </TableBody>
       </Table>
+
+      {/* Notes Modal */}
+      {notesModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-md shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">View/Edit Notes</h2>
+            <textarea
+              className="w-full border rounded p-2 mb-4 text-black dark:text-white dark:bg-gray-800"
+              rows={5}
+              value={notesValue}
+              onChange={e => setNotesValue(e.target.value)}
+              placeholder="Enter notes here..."
+            />
+            <div className="flex justify-end space-x-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setNotesModalOpen(false);
+                  setNotesValue("");
+                  setNotesPaymentId(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={async () => {
+                  if (!notesPaymentId) return;
+                  try {
+                    const paymentToUpdate = payments.find(p => p.id === notesPaymentId);
+                    if (!paymentToUpdate) return;
+                    const updatedPayment = { ...paymentToUpdate, notes: notesValue };
+                    const response = await fetch(`/api/payments/${notesPaymentId}`, {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify(updatedPayment),
+                    });
+                    if (!response.ok) throw new Error("Failed to update notes");
+                    setPayments(payments.map(p => p.id === notesPaymentId ? updatedPayment : p));
+                    toast({ title: "Success", description: "Notes updated." });
+                    setNotesModalOpen(false);
+                    setNotesValue("");
+                    setNotesPaymentId(null);
+                    router.refresh();
+                  } catch (error) {
+                    toast({ title: "Error", description: error instanceof Error ? error.message : "Failed to update notes", variant: "destructive" });
+                  }
+                }}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

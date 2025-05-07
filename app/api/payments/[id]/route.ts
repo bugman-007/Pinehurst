@@ -11,7 +11,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
 
     const paymentId = params.id
-    const { parcel_id, amount_due, amount_paid, balance, date, paid_date, method, status } = await req.json()
+    const { parcel_id, amount_due, amount_paid, balance, date, paid_date, method, status, notes } = await req.json()
 
     // Check if payment exists
     const payment = await db.query("SELECT * FROM payments WHERE id = ?", [paymentId])
@@ -43,10 +43,11 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
         date = ?, 
         paid_date = ?, 
         method = ?, 
-        status = ? 
+        status = ?,
+        notes = ?
       WHERE id = ?
     `,
-      [parcel_id, amount_due, amount_paid, balance, formattedDate, formattedPaidDate, method, status, paymentId],
+      [parcel_id, amount_due, amount_paid, balance, formattedDate, formattedPaidDate, method, status, notes || null, paymentId],
     )
 
     return NextResponse.json({ message: "Payment updated successfully" }, { status: 200 })

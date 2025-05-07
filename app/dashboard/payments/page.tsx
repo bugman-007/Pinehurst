@@ -26,6 +26,7 @@ export default async function PaymentsPage() {
     p.paid_date, 
     p.method, 
     p.status, 
+    p.notes,
     u.name as customer_name
   FROM payments p
   JOIN users u ON p.customer_id = u.id

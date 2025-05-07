@@ -10,7 +10,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
     }
 
-    const { customer_id, parcel_id, amount_due, amount_paid, balance, date, paid_date, method, status } =
+    const { customer_id, parcel_id, amount_due, amount_paid, balance, date, paid_date, method, status, notes } =
       await req.json()
 
     // Update validation to accept the new status values
@@ -41,10 +41,11 @@ export async function POST(req: Request) {
         date, 
         paid_date, 
         method, 
-        status
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        status,
+        notes
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `,
-      [customer_id, parcel_id, amount_due, amount_paid, balance, formattedDate, formattedPaidDate, method, status],
+      [customer_id, parcel_id, amount_due, amount_paid, balance, formattedDate, formattedPaidDate, method, status, notes || null],
     )
 
     return NextResponse.json({ message: "Payment created successfully" }, { status: 201 })

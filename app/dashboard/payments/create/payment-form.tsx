@@ -55,6 +55,7 @@ export function PaymentForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingCustomers, setIsLoadingCustomers] = useState(true);
   const [isLoadingProperties, setIsLoadingProperties] = useState(false);
+  const [notes, setNotes] = useState("");
 
   const router = useRouter();
   const { toast } = useToast();
@@ -167,6 +168,7 @@ export function PaymentForm() {
           paid_date: status === "paid" ? paidDate : null,
           method,
           status,
+          notes,
         }),
       });
 
@@ -368,6 +370,16 @@ export function PaymentForm() {
                 <SelectItem value="money_order">Money Order</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="notes">Notes</Label>
+            <Input
+              id="notes"
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Enter any notes (optional)"
+            />
           </div>
         </CardContent>
         <CardFooter className="flex justify-between">
