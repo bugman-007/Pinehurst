@@ -449,7 +449,9 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
                         <span className="text-muted-foreground">-</span>
                       )}
                     </TableCell>
-                    <TableCell className="capitalize">{payment.method.replace("_", " ")}</TableCell>
+                    <TableCell className="capitalize">
+                      {payment.method ? payment.method.replace("_", " ") : "-"}
+                    </TableCell>
                     <TableCell>{getStatusBadge(payment.status)}</TableCell>
                     {!readOnly && (
                       <TableCell>
