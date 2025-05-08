@@ -161,7 +161,9 @@ export function DocumentTable({ documents, isAdmin }: DocumentTableProps) {
             </TableRow>
           ) : (
             documents.map((document) => {
-              const fileName = document.file_url.split("/").pop() || "document";
+              const rawFileName = document.file_url.split("/").pop() || "document";
+              // Remove leading numbers and dashes (e.g., "4-1746068386307-Removable_directory.png" -> "Removable_directory.png")
+              const fileName = rawFileName.replace(/^[^-]+-[^-]+-/, "");
 
               return (
                 <TableRow key={document.id}>
