@@ -90,6 +90,7 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
       if (!response.ok) {
         throw new Error("Failed to update payment")
       }
+      console.log(payments)
 
       setPayments(payments.map((p) => (p.id === editedPayment.id ? editedPayment : p)))
 

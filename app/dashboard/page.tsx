@@ -180,12 +180,12 @@ export default async function Dashboard() {
         </div>
 
         {/* User Payments Table */}
-        {!isAdmin && (
+        {/* {!isAdmin && (
           <div className="mt-8">
             <h2 className="text-xl font-semibold mb-4">Your Payments</h2>
             <PaymentTable payments={userPayments} readOnly />
           </div>
-        )}
+        )} */}
 
         {/* Account Information */}
         <div className="flex gap-6 ">
