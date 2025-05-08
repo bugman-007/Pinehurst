@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { DateFormatter } from "@/components/date-formatter"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface Payment {
   id: string
@@ -24,7 +25,7 @@ interface Payment {
   paid_date: string | null
   method: string
   status: string
-  notes?: string;
+  notes?: string
 }
 
 interface PaymentTableProps {
@@ -37,13 +38,13 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editedPayment, setEditedPayment] = useState<Payment | null>(null)
-  const [notesModalOpen, setNotesModalOpen] = useState(false);
-  const [notesValue, setNotesValue] = useState("");
-  const [notesPaymentId, setNotesPaymentId] = useState<string | null>(null);
+  const [notesModalOpen, setNotesModalOpen] = useState(false)
+  const [notesValue, setNotesValue] = useState("")
+  const [notesPaymentId, setNotesPaymentId] = useState<string | null>(null)
   const { toast } = useToast()
   const router = useRouter()
-  const [sortBy, setSortBy] = useState<keyof Payment | null>(null);
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [sortBy, setSortBy] = useState<keyof Payment | null>(null)
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
 
   const handleEdit = (payment: Payment) => {
     setEditingId(payment.id)
@@ -60,7 +61,6 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
 
     let updatedPayment = { ...editedPayment, [field]: value }
 
-    // Recalculate balance when amount_due or amount_paid changes
     if (field === "amount_due" || field === "amount_paid") {
       const amountDue = field === "amount_due" ? Number(value) : editedPayment.amount_due
       const amountPaid = field === "amount_paid" ? Number(value) : editedPayment.amount_paid
@@ -91,7 +91,6 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
         throw new Error("Failed to update payment")
       }
 
-      // Update the payments list with the edited payment
       setPayments(payments.map((p) => (p.id === editedPayment.id ? editedPayment : p)))
 
       toast({
@@ -129,7 +128,6 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
           description: "Payment deleted successfully",
         })
 
-        // Remove the deleted payment from the list
         setPayments(payments.filter((p) => p.id !== paymentId))
         router.refresh()
       } catch (error) {
@@ -163,74 +161,51 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
     }
   }
 
-  const dateFields = ["date", "paid_date"];
-  const numericFields = ["amount_due", "amount_paid", "balance"];
+  const dateFields = ["date", "paid_date"]
+  const numericFields = ["amount_due", "amount_paid", "balance"]
 
   const sortedPayments = [...payments].sort((a, b) => {
-    if (!sortBy) return 0;
-    let aValue = a[sortBy];
-    let bValue = b[sortBy];
+    if (!sortBy) return 0
+    let aValue = a[sortBy]
+    let bValue = b[sortBy]
 
-    // Numeric sort
     if (numericFields.includes(sortBy)) {
-      aValue = Number(aValue);
-      bValue = Number(bValue);
-      return sortDirection === "asc" ? aValue - bValue : bValue - aValue;
+      aValue = Number(aValue)
+      bValue = Number(bValue)
+      return sortDirection === "asc" ? aValue - bValue : bValue - aValue
     }
 
-    // Date sort
     if (dateFields.includes(sortBy)) {
-      const aTime = aValue ? new Date(aValue).getTime() : 0;
-      const bTime = bValue ? new Date(bValue).getTime() : 0;
-      return sortDirection === "asc" ? aTime - bTime : bTime - aTime;
+      const aTime = aValue ? new Date(aValue).getTime() : 0
+      const bTime = bValue ? new Date(bValue).getTime() : 0
+      return sortDirection === "asc" ? aTime - bTime : bTime - aTime
     }
 
-    // String sort
-    if (aValue == null) return 1;
-    if (bValue == null) return -1;
+    if (aValue == null) return 1
+    if (bValue == null) return -1
     return sortDirection === "asc"
       ? String(aValue).localeCompare(String(bValue))
-      : String(bValue).localeCompare(String(aValue));
-  });
+      : String(bValue).localeCompare(String(aValue))
+  })
 
   return (
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead
-              onClick={() => {
-                if (sortBy === "customer_name") {
-                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-                } else {
-                  setSortBy("customer_name");
-                  setSortDirection("asc");
-                }
-              }}
-              className="cursor-pointer"
-            >
+            {!readOnly && <TableHead>
               Customer {sortBy === "customer_name" ? (sortDirection === "asc" ? "▲" : "▼") : ""}
-            </TableHead>
-            <TableHead
-              onClick={() => {
-                if (sortBy === "parcel_id") {
-                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-                } else {
-                  setSortBy("parcel_id");
-                  setSortDirection("asc");
-                }
-              }}
-              className="cursor-pointer"
-            >
+            </TableHead>}
+            {!readOnly && <TableHead>
               Parcel ID {sortBy === "parcel_id" ? (sortDirection === "asc" ? "▲" : "▼") : ""}
-            </TableHead>
+            </TableHead>}
             <TableHead
               onClick={() => {
                 if (sortBy === "amount_due") {
-                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc")
                 } else {
-                  setSortBy("amount_due");
-                  setSortDirection("asc");
+                  setSortBy("amount_due")
+                  setSortDirection("asc")
                 }
               }}
               className="cursor-pointer"
@@ -240,10 +215,10 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
             <TableHead
               onClick={() => {
                 if (sortBy === "amount_paid") {
-                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc")
                 } else {
-                  setSortBy("amount_paid");
-                  setSortDirection("asc");
+                  setSortBy("amount_paid")
+                  setSortDirection("asc")
                 }
               }}
               className="cursor-pointer"
@@ -253,10 +228,10 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
             <TableHead
               onClick={() => {
                 if (sortBy === "balance") {
-                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc")
                 } else {
-                  setSortBy("balance");
-                  setSortDirection("asc");
+                  setSortBy("balance")
+                  setSortDirection("asc")
                 }
               }}
               className="cursor-pointer"
@@ -266,10 +241,10 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
             <TableHead
               onClick={() => {
                 if (sortBy === "date") {
-                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc")
                 } else {
-                  setSortBy("date");
-                  setSortDirection("asc");
+                  setSortBy("date")
+                  setSortDirection("asc")
                 }
               }}
               className="cursor-pointer"
@@ -279,10 +254,10 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
             <TableHead
               onClick={() => {
                 if (sortBy === "paid_date") {
-                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc")
                 } else {
-                  setSortBy("paid_date");
-                  setSortDirection("asc");
+                  setSortBy("paid_date")
+                  setSortDirection("asc")
                 }
               }}
               className="cursor-pointer"
@@ -292,10 +267,10 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
             <TableHead
               onClick={() => {
                 if (sortBy === "method") {
-                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc")
                 } else {
-                  setSortBy("method");
-                  setSortDirection("asc");
+                  setSortBy("method")
+                  setSortDirection("asc")
                 }
               }}
               className="cursor-pointer"
@@ -305,10 +280,10 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
             <TableHead
               onClick={() => {
                 if (sortBy === "status") {
-                  setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+                  setSortDirection(sortDirection === "asc" ? "desc" : "asc")
                 } else {
-                  setSortBy("status");
-                  setSortDirection("asc");
+                  setSortBy("status")
+                  setSortDirection("asc")
                 }
               }}
               className="cursor-pointer"
@@ -321,187 +296,79 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
         <TableBody>
           {payments.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={readOnly ? 9 : 10} className="text-center">
+              <TableCell colSpan={readOnly ? 7 : 10} className="text-center">
                 No payments found
               </TableCell>
             </TableRow>
           ) : (
             sortedPayments.map((payment) => (
               <TableRow key={payment.id}>
-                {editingId === payment.id && editedPayment && !readOnly ? (
-                  // Editing mode
-                  <>
-                    <TableCell>{payment.customer_name}</TableCell>
-                    <TableCell>
-                      <Input
-                        value={editedPayment.parcel_id}
-                        onChange={(e) => handleInputChange("parcel_id", e.target.value)}
-                        className="w-full max-w-[120px]"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        value={editedPayment.amount_due}
-                        onChange={(e) => handleInputChange("amount_due", Number.parseFloat(e.target.value))}
-                        className="w-full max-w-[100px]"
-                        step="0.01"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Input
-                        type="number"
-                        value={editedPayment.amount_paid}
-                        onChange={(e) => handleInputChange("amount_paid", Number.parseFloat(e.target.value))}
-                        className="w-full max-w-[100px]"
-                        step="0.01"
-                      />
-                    </TableCell>
-                    <TableCell>${editedPayment.balance}</TableCell>
-                    <TableCell>
-                      <Input
-                        type="date"
-                        value={new Date(editedPayment.date).toISOString().split("T")[0]}
-                        onChange={(e) => handleInputChange("date", e.target.value)}
-                        className="w-full max-w-[130px]"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {editedPayment.status === "paid" ? (
-                        <Input
-                          type="date"
-                          value={
-                            editedPayment.paid_date ? new Date(editedPayment.paid_date).toISOString().split("T")[0] : ""
-                          }
-                          onChange={(e) => handleInputChange("paid_date", e.target.value + 1)}
-                          className="w-full max-w-[130px]"
-                        />
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <Select
-                        value={editedPayment.method}
-                        onValueChange={(value) => handleInputChange("method", value)}
-                      >
-                        <SelectTrigger className="w-[130px]">
-                          <SelectValue placeholder="Select method" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="credit_card">Credit Card</SelectItem>
-                          <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                          <SelectItem value="paypal">PayPal</SelectItem>
-                          <SelectItem value="cash">Cash</SelectItem>
-                          <SelectItem value="zelle">Zelle</SelectItem>
-                          <SelectItem value="venmo">Venmo</SelectItem>
-                          <SelectItem value="cash_app">Cash App</SelectItem>
-                          <SelectItem value="money_order">Money Order</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>
-                      <Select
-                        value={editedPayment.status}
-                        onValueChange={(value) => handleInputChange("status", value)}
-                      >
-                        <SelectTrigger className="w-[130px]">
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="paid">Paid</SelectItem>
-                          <SelectItem value="partially_paid">Partially Paid</SelectItem>
-                          <SelectItem value="not_paid">Not Paid</SelectItem>
-                          <SelectItem value="past_due">Past Due</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    {!readOnly && (
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button variant="outline" size="icon" onClick={handleSaveEdit}>
-                            <Save className="h-4 w-4" />
-                            <span className="sr-only">Save</span>
+                {!readOnly && <TableCell>{payment.customer_name}</TableCell>}
+                {!readOnly && <TableCell>{payment.parcel_id || "-"}</TableCell>}
+                <TableCell>${payment.amount_due}</TableCell>
+                <TableCell>${payment.amount_paid}</TableCell>
+                <TableCell>${payment.balance}</TableCell>
+                <TableCell>
+                  <DateFormatter date={payment.date} />
+                </TableCell>
+                <TableCell>
+                  {payment.paid_date ? (
+                    <DateFormatter date={payment.paid_date} />
+                  ) : (
+                    <span className="text-muted-foreground">-</span>
+                  )}
+                </TableCell>
+                <TableCell className="capitalize">
+                  {payment.method ? payment.method.replace("_", " ") : "-"}
+                </TableCell>
+                <TableCell>{getStatusBadge(payment.status)}</TableCell>
+                {!readOnly && (
+                  <TableCell>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="icon">
+                          <MoreHorizontal className="h-4 w-4" />
+                          <span className="sr-only">Open menu</span>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start cursor-pointer"
+                            onClick={() => handleEdit(payment)}
+                          >
+                            <Pencil className="mr-2 h-4 w-4" />
+                            Edit
                           </Button>
-                          <Button variant="outline" size="icon" onClick={handleCancelEdit}>
-                            <X className="h-4 w-4" />
-                            <span className="sr-only">Cancel</span>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start cursor-pointer"
+                            onClick={() => {
+                              setNotesModalOpen(true)
+                              setNotesValue(payment.notes || "")
+                              setNotesPaymentId(payment.id)
+                            }}
+                          >
+                            📝 View/Edit Notes
                           </Button>
-                        </div>
-                      </TableCell>
-                    )}
-                  </>
-                ) : (
-                  // View mode
-                  <>
-                    <TableCell>{payment.customer_name}</TableCell>
-                    <TableCell>{payment.parcel_id || "-"}</TableCell>
-                    <TableCell>${payment.amount_due || "0.00"}</TableCell>
-                    <TableCell>${payment.amount_paid || "0.00"}</TableCell>
-                    <TableCell>${payment.balance || "0.00"}</TableCell>
-                    <TableCell>
-                      <DateFormatter date={payment.date} />
-                    </TableCell>
-                    <TableCell>
-                      {payment.paid_date ? (
-                        <DateFormatter date={payment.paid_date} />
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="capitalize">
-                      {payment.method ? payment.method.replace("_", " ") : "-"}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(payment.status)}</TableCell>
-                    {!readOnly && (
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Open menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem asChild>
-                              <Button
-                                variant="ghost"
-                                className="w-full justify-start cursor-pointer"
-                                onClick={() => handleEdit(payment)}
-                              >
-                                <Pencil className="mr-2 h-4 w-4" />
-                                Edit
-                              </Button>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Button
-                                variant="ghost"
-                                className="w-full justify-start cursor-pointer"
-                                onClick={() => {
-                                  setNotesModalOpen(true);
-                                  setNotesValue(payment.notes || "");
-                                  setNotesPaymentId(payment.id);
-                                }}
-                              >
-                                📝 View/Edit Notes
-                              </Button>
-                            </DropdownMenuItem>
-                            <DropdownMenuItem asChild>
-                              <Button
-                                variant="ghost"
-                                className="w-full justify-start cursor-pointer text-destructive"
-                                onClick={() => handleDelete(payment.id)}
-                                disabled={isDeleting === payment.id}
-                              >
-                                <Trash className="mr-2 h-4 w-4" />
-                                {isDeleting === payment.id ? "Deleting..." : "Delete"}
-                              </Button>
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    )}
-                  </>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start cursor-pointer text-destructive"
+                            onClick={() => handleDelete(payment.id)}
+                            disabled={isDeleting === payment.id}
+                          >
+                            <Trash className="mr-2 h-4 w-4" />
+                            {isDeleting === payment.id ? "Deleting..." : "Delete"}
+                          </Button>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
                 )}
               </TableRow>
             ))
@@ -509,7 +376,6 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
         </TableBody>
       </Table>
 
-      {/* Notes Modal */}
       {notesModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white dark:bg-gray-900 rounded-lg p-6 w-full max-w-md shadow-lg">
@@ -525,34 +391,34 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
               <Button
                 variant="outline"
                 onClick={() => {
-                  setNotesModalOpen(false);
-                  setNotesValue("");
-                  setNotesPaymentId(null);
+                  setNotesModalOpen(false)
+                  setNotesValue("")
+                  setNotesPaymentId(null)
                 }}
               >
                 Cancel
               </Button>
               <Button
                 onClick={async () => {
-                  if (!notesPaymentId) return;
+                  if (!notesPaymentId) return
                   try {
-                    const paymentToUpdate = payments.find(p => p.id === notesPaymentId);
-                    if (!paymentToUpdate) return;
-                    const updatedPayment = { ...paymentToUpdate, notes: notesValue };
+                    const paymentToUpdate = payments.find(p => p.id === notesPaymentId)
+                    if (!paymentToUpdate) return
+                    const updatedPayment = { ...paymentToUpdate, notes: notesValue }
                     const response = await fetch(`/api/payments/${notesPaymentId}`, {
                       method: "PUT",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify(updatedPayment),
-                    });
-                    if (!response.ok) throw new Error("Failed to update notes");
-                    setPayments(payments.map(p => p.id === notesPaymentId ? updatedPayment : p));
-                    toast({ title: "Success", description: "Notes updated." });
-                    setNotesModalOpen(false);
-                    setNotesValue("");
-                    setNotesPaymentId(null);
-                    router.refresh();
+                    })
+                    if (!response.ok) throw new Error("Failed to update notes")
+                    setPayments(payments.map(p => p.id === notesPaymentId ? updatedPayment : p))
+                    toast({ title: "Success", description: "Notes updated." })
+                    setNotesModalOpen(false)
+                    setNotesValue("")
+                    setNotesPaymentId(null)
+                    router.refresh()
                   } catch (error) {
-                    toast({ title: "Error", description: error instanceof Error ? error.message : "Failed to update notes", variant: "destructive" });
+                    toast({ title: "Error", description: error instanceof Error ? error.message : "Failed to update notes", variant: "destructive" })
                   }
                 }}
               >

@@ -14,6 +14,7 @@ import { Building, MapPin, Ruler, FileText, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { PaymentTable } from "../payments/payment-table";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Property {
   id: string;
@@ -43,6 +44,26 @@ interface TaxDocument {
   file_url: string;
 }
 
+interface Payment {
+  id: string;
+  customer_id: string;
+  customer_name: string;
+  parcel_id: string;
+  amount_due: number;
+  amount_paid: number;
+  balance: number;
+  date: string;
+  paid_date: string | null;
+  method: string;
+  status: string;
+  notes?: string;
+}
+
+interface APIResponse {
+  payments: Payment[];
+  taxDocuments: TaxDocument[];
+}
+
 interface UserPropertyListProps {
   properties: Property[];
 }
@@ -55,13 +76,13 @@ export function UserPropertyList({ properties }: UserPropertyListProps) {
   const selectedProperty =
     properties.find((p) => p.id === selectedPropertyId) || null;
 
-  const [payments, setPayments] = useState([]);
+  const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const [documents, setDocuments] = useState<TaxDocument[]>([]);
   const [loadingDocs, setLoadingDocs] = useState(false);
-  const [errorDocs, setErrorDocs] = useState(null);
+  const [errorDocs, setErrorDocs] = useState<string | null>(null);
 
   useEffect(() => {
     if (!selectedProperty) {
@@ -69,25 +90,39 @@ export function UserPropertyList({ properties }: UserPropertyListProps) {
       setDocuments([]);
       return;
     }
-    setLoading(true);
-    setError(null);
-    fetch(`/api/properties/${selectedProperty.id}`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to fetch payments");
-        return res.json();
-      })
-      .then((data) => {
-        setPayments(data.payments || []);
+
+    const fetchPropertyData = async () => {
+      setLoading(true);
+      setLoadingDocs(true);
+      setError(null);
+      setErrorDocs(null);
+
+      try {
+        const response = await fetch(`/api/properties/${selectedProperty.id}`);
+        if (!response.ok) throw new Error("Failed to fetch property data");
+        
+        const data: APIResponse = await response.json();
+
+        const formattedPayments = (data.payments || []).map(payment => ({
+          ...payment,
+          paid_date: payment.paid_date || null,
+          method: payment.method || 'Unknown',
+          customer_name: payment.customer_name || 'N/A'
+        }));
+
+        setPayments(formattedPayments);
         setDocuments(data.taxDocuments || []);
-      })
-      .catch((err) => {
-        setError(err.message);
-        setErrorDocs(err.message);
-      })
-      .finally(() => {
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
+        setError(errorMessage);
+        setErrorDocs(errorMessage);
+      } finally {
         setLoading(false);
         setLoadingDocs(false);
-      });
+      }
+    };
+
+    fetchPropertyData();
   }, [selectedProperty]);
 
   const getStatusBadge = (status: string) => {
@@ -189,7 +224,7 @@ export function UserPropertyList({ properties }: UserPropertyListProps) {
                 <TabsList className="mb-4">
                   <TabsTrigger value="details">Property Details</TabsTrigger>
                   <TabsTrigger value="payments">Payments</TabsTrigger>
-                  <TabsTrigger value="documents">Documents</TabsTrigger>
+                  <TabsTrigger value="documents">Tax Documents</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="details" className="space-y-4">
@@ -267,7 +302,12 @@ export function UserPropertyList({ properties }: UserPropertyListProps) {
                       </h3>
                     </div>
                     {loading ? (
-                      <p className="text-sm text-muted-foreground">Loading payments...</p>
+                      <div className="space-y-2">
+                        <Skeleton className="h-10 w-full" />
+                        {[...Array(5)].map((_, i) => (
+                          <Skeleton key={i} className="h-12 w-full" />
+                        ))}
+                      </div>
                     ) : error ? (
                       <p className="text-sm text-destructive">{error}</p>
                     ) : (
@@ -280,11 +320,16 @@ export function UserPropertyList({ properties }: UserPropertyListProps) {
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
                       <h3 className="text-sm font-medium flex items-center gap-2">
-                        <FileText className="h-4 w-4" /> Documents
+                        <FileText className="h-4 w-4" />Tax Documents
                       </h3>
                     </div>
                     {loadingDocs ? (
-                      <p className="text-sm text-muted-foreground">Loading documents...</p>
+                      <div className="space-y-2">
+                        <Skeleton className="h-10 w-full" />
+                        {[...Array(3)].map((_, i) => (
+                          <Skeleton key={i} className="h-12 w-full" />
+                        ))}
+                      </div>
                     ) : errorDocs ? (
                       <p className="text-sm text-destructive">{errorDocs}</p>
                     ) : documents.length === 0 ? (
