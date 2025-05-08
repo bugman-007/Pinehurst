@@ -373,7 +373,7 @@ export function PaymentTable({ payments: initialPayments, readOnly = false }: Pa
                           value={
                             editedPayment.paid_date ? new Date(editedPayment.paid_date).toISOString().split("T")[0] : ""
                           }
-                          onChange={(e) => handleInputChange("paid_date", e.target.value)}
+                          onChange={(e) => handleInputChange("paid_date", e.target.value + 1)}
                           className="w-full max-w-[130px]"
                         />
                       ) : (
