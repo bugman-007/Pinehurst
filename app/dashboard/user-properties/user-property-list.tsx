@@ -1,13 +1,28 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building, MapPin, Ruler, FileText, CreditCard } from "lucide-react";
+import {
+  Building,
+  MapPin,
+  Ruler,
+  FileText,
+  CreditCard,
+  ImageIcon,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PaymentTable } from "../payments/payment-table";
 import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
+import { DateFormatter } from "@/components/date-formatter";
 
 type Property = {
   id: string;
@@ -37,6 +52,13 @@ type TaxDocument = {
   file_url: string;
 };
 
+type Photo = {
+  id: string;
+  file_url: string;
+  file_name: string;
+  uploaded_at: string;
+};
+
 type Payment = {
   id: string;
   customer_id: string;
@@ -55,6 +77,7 @@ type Payment = {
 type APIResponse = {
   payments: Payment[];
   taxDocuments: TaxDocument[];
+  photos?: Photo[];
 };
 
 type UserPropertyListProps = {
@@ -65,46 +88,62 @@ const statusBadgeMap: Record<string, string> = {
   available: "bg-green-500",
   financing: "bg-blue-500",
   "loan in default": "bg-red-500",
-  sold: "bg-gray-500"
+  sold: "bg-gray-500",
 };
 
 export function UserPropertyList({ properties }: UserPropertyListProps) {
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(properties[0]?.id || null);
-  const [data, setData] = useState<{ payments: Payment[]; documents: TaxDocument[] }>({ payments: [], documents: [] });
-  const [loading, setLoading] = useState({ payments: false, documents: false });
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string | null>(
+    properties[0]?.id || null
+  );
+  const [data, setData] = useState<{
+    payments: Payment[];
+    documents: TaxDocument[];
+    photos: Photo[];
+  }>({ payments: [], documents: [], photos: [] });
+  const [loading, setLoading] = useState({
+    payments: false,
+    documents: false,
+    photos: false,
+  });
   const [error, setError] = useState<string | null>(null);
 
-  const selectedProperty = properties.find((p) => p.id === selectedPropertyId) || null;
+  const selectedProperty =
+    properties.find((p) => p.id === selectedPropertyId) || null;
 
   useEffect(() => {
     if (!selectedProperty) {
-      setData({ payments: [], documents: [] });
+      setData({ payments: [], documents: [], photos: [] });
       return;
     }
 
     const fetchData = async () => {
-      setLoading({ payments: true, documents: true });
+      setLoading({ payments: true, documents: true, photos: true });
       setError(null);
 
       try {
         const res = await fetch(`/api/properties/${selectedProperty.id}`);
         if (!res.ok) throw new Error("Failed to fetch property data");
-        
-        const { payments = [], taxDocuments = [] }: APIResponse = await res.json();
-        console.log(payments)
+
+        const {
+          payments = [],
+          taxDocuments = [],
+          photos = [],
+        }: APIResponse = await res.json();
+
         setData({
-          payments: payments.map(p => ({
+          payments: payments.map((p) => ({
             ...p,
             paid_date: p.paid_date || null,
-            method: p.method ? p.method.replace("_", " ") : "Unknown",
-            customer_name: p.customer_name || 'N/A'
+            method: p.method || "Unknown",
+            customer_name: p.customer_name || "N/A",
           })),
-          documents: taxDocuments
+          documents: taxDocuments,
+          photos,
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
-        setLoading({ payments: false, documents: false });
+        setLoading({ payments: false, documents: false, photos: false });
       }
     };
 
@@ -117,68 +156,142 @@ export function UserPropertyList({ properties }: UserPropertyListProps) {
     </Badge>
   );
 
-  const getAddress = ({ street_number, street_name, city, state, zip }: Property) => {
+  const getAddress = ({
+    street_number,
+    street_name,
+    city,
+    state,
+    zip,
+  }: Property) => {
     const street = [street_number, street_name].filter(Boolean).join(" ");
     const cityState = [city, state, zip].filter(Boolean).join(", ");
-    return [street, cityState].filter(Boolean).join(", ") || "No address provided";
+    return (
+      [street, cityState].filter(Boolean).join(", ") || "No address provided"
+    );
   };
 
-  if (properties.length === 0) {
+  const renderPropertyPhotos = () => {
+    if (loading.photos) {
+      return (
+        <div className="space-y-2">
+          <Skeleton className="h-10 w-full" />
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="aspect-video w-full rounded-lg" />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (data.photos.length === 0) {
+      return (
+        <div className="flex flex-col items-center justify-center py-8 text-center">
+          <ImageIcon className="h-16 w-16 text-muted-foreground mb-4" />
+          <h3 className="text-lg font-medium">No photos available</h3>
+          <p className="text-sm text-muted-foreground">
+            This property doesn't have any photos yet
+          </p>
+        </div>
+      );
+    }
+
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>No Properties</CardTitle>
-          <CardDescription>You don't have any properties assigned to you yet.</CardDescription>
-        </CardHeader>
-      </Card>
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {data.photos.map((photo) => (
+          <div
+            key={photo.id}
+            className="group relative overflow-hidden rounded-lg border"
+          >
+            <div className="aspect-video w-full overflow-hidden">
+              <Image
+                src={photo.file_url || "/placeholder.svg"}
+                alt={photo.file_name}
+                width={400}
+                height={300}
+                className="h-full w-full object-cover"
+              />
+            </div>
+            <div className="p-2">
+              <p className="truncate text-sm font-medium">{photo.file_name}</p>
+              <p className="text-xs text-muted-foreground">
+                <DateFormatter date={photo.uploaded_at} />
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
     );
-  }
+  };
 
   const renderPropertyDetails = () => (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-sm font-medium flex items-center gap-2">
-            <MapPin className="h-4 w-4" /> Location
-          </h3>
-          <div className="mt-1 text-sm">
-            <p>{getAddress(selectedProperty!)}</p>
-            {selectedProperty?.county && <p>County: {selectedProperty.county}</p>}
-            {selectedProperty?.cross_streets && <p>Cross Streets: {selectedProperty.cross_streets}</p>}
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-sm font-medium flex items-center gap-2">
+              <MapPin className="h-4 w-4" /> Location
+            </h3>
+            <div className="mt-1 text-sm">
+              <p>{getAddress(selectedProperty!)}</p>
+              {selectedProperty?.county && (
+                <p>County: {selectedProperty.county}</p>
+              )}
+              {selectedProperty?.cross_streets && (
+                <p>Cross Streets: {selectedProperty.cross_streets}</p>
+              )}
+            </div>
+          </div>
+          {selectedProperty?.google_maps_link && (
+            <a
+              href={selectedProperty.google_maps_link}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-sm text-primary hover:underline"
+            >
+              View on Google Maps
+            </a>
+          )}
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-sm font-medium flex items-center gap-2">
+              <Ruler className="h-4 w-4" /> Lot Information
+            </h3>
+            <div className="mt-1 text-sm">
+              {selectedProperty?.lot_size && (
+                <p>Size: {selectedProperty.lot_size}</p>
+              )}
+              {selectedProperty?.lot_sf && (
+                <p>Square Feet: {selectedProperty.lot_sf}</p>
+              )}
+              {selectedProperty?.lot_acres && (
+                <p>Acres: {selectedProperty.lot_acres}</p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-medium flex items-center gap-2">
+              <FileText className="h-4 w-4" /> Property Identifiers
+            </h3>
+            <div className="mt-1 text-sm">
+              <p>Parcel ID: {selectedProperty?.parcel_id}</p>
+              {selectedProperty?.ppin && <p>PPIN: {selectedProperty.ppin}</p>}
+            </div>
           </div>
         </div>
-        {selectedProperty?.google_maps_link && (
-          <a href={selectedProperty.google_maps_link} target="_blank" rel="noopener noreferrer" className="text-sm text-primary hover:underline">
-            View on Google Maps
-          </a>
-        )}
       </div>
 
-      <div className="space-y-4">
-        <div>
-          <h3 className="text-sm font-medium flex items-center gap-2">
-            <Ruler className="h-4 w-4" /> Lot Information
-          </h3>
-          <div className="mt-1 text-sm">
-            {selectedProperty?.lot_size && <p>Size: {selectedProperty.lot_size}</p>}
-            {selectedProperty?.lot_sf && <p>Square Feet: {selectedProperty.lot_sf}</p>}
-            {selectedProperty?.lot_acres && <p>Acres: {selectedProperty.lot_acres}</p>}
-          </div>
-        </div>
-
-        <div>
-          <h3 className="text-sm font-medium flex items-center gap-2">
-            <FileText className="h-4 w-4" /> Property Identifiers
-          </h3>
-          <div className="mt-1 text-sm">
-            <p>Parcel ID: {selectedProperty?.parcel_id}</p>
-            {selectedProperty?.ppin && <p>PPIN: {selectedProperty.ppin}</p>}
-          </div>
-        </div>
+      <div>
+        <h3 className="text-sm font-medium flex items-center gap-2 mb-4">
+          <ImageIcon className="h-4 w-4" /> Property Photos
+        </h3>
+        {renderPropertyPhotos()}
       </div>
     </div>
   );
-
   const renderDocumentsTable = () => (
     <div className="overflow-x-auto">
       <table className="min-w-full text-sm">
@@ -195,9 +308,16 @@ export function UserPropertyList({ properties }: UserPropertyListProps) {
             <tr key={doc.id}>
               <td className="p-2">{doc.file_name}</td>
               <td className="p-2">{doc.tax_year || "N/A"}</td>
-              <td className="p-2">{new Date(doc.uploaded_at).toLocaleDateString()}</td>
               <td className="p-2">
-                <a href={doc.file_url} target="_blank" rel="noopener noreferrer" className="text-primary underline">
+                {new Date(doc.uploaded_at).toLocaleDateString()}
+              </td>
+              <td className="p-2">
+                <a
+                  href={doc.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary underline"
+                >
                   Download
                 </a>
               </td>
@@ -220,7 +340,9 @@ export function UserPropertyList({ properties }: UserPropertyListProps) {
             {properties.map((property) => (
               <Button
                 key={property.id}
-                variant={selectedPropertyId === property.id ? "default" : "outline"}
+                variant={
+                  selectedPropertyId === property.id ? "default" : "outline"
+                }
                 className="w-full justify-start text-left"
                 onClick={() => setSelectedPropertyId(property.id)}
               >
@@ -246,7 +368,9 @@ export function UserPropertyList({ properties }: UserPropertyListProps) {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle>{selectedProperty.parcel_id}</CardTitle>
-                  <CardDescription>{getAddress(selectedProperty)}</CardDescription>
+                  <CardDescription>
+                    {getAddress(selectedProperty)}
+                  </CardDescription>
                 </div>
                 {getStatusBadge(selectedProperty.status)}
               </div>
@@ -271,7 +395,9 @@ export function UserPropertyList({ properties }: UserPropertyListProps) {
                   {loading.payments ? (
                     <div className="space-y-2">
                       <Skeleton className="h-10 w-full" />
-                      {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+                      {[...Array(5)].map((_, i) => (
+                        <Skeleton key={i} className="h-12 w-full" />
+                      ))}
                     </div>
                   ) : error ? (
                     <p className="text-sm text-destructive">{error}</p>
@@ -288,12 +414,16 @@ export function UserPropertyList({ properties }: UserPropertyListProps) {
                   {loading.documents ? (
                     <div className="space-y-2">
                       <Skeleton className="h-10 w-full" />
-                      {[...Array(3)].map((_, i) => <Skeleton key={i} className="h-12 w-full" />)}
+                      {[...Array(3)].map((_, i) => (
+                        <Skeleton key={i} className="h-12 w-full" />
+                      ))}
                     </div>
                   ) : error ? (
                     <p className="text-sm text-destructive">{error}</p>
                   ) : data.documents.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No documents found for this property.</p>
+                    <p className="text-sm text-muted-foreground">
+                      No documents found for this property.
+                    </p>
                   ) : (
                     renderDocumentsTable()
                   )}
