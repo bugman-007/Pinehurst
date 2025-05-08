@@ -60,7 +60,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     // Get related payments
     const payments = await db.query(
       `
-      SELECT p.id, p.amount_due, p.amount_paid, p.balance, p.date, p.status, p.method, u.name as customer_name
+      SELECT p.id, p.amount_due, p.amount_paid, p.balance, p.date, p.paid_date, p.status, p.method, u.name as customer_name
       FROM payments p
       JOIN users u ON p.customer_id = u.id
       WHERE p.parcel_id = ?
